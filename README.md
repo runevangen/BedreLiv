@@ -11,10 +11,30 @@ database å drifte.
 
 ```
 index.html                    hele appen — innlogging, skjema og logg
+figurer.js                    strekfigurer for øvelsene (SVG, ingen bildefiler)
 app-api.js                    klient mot backenden
 netlify/functions/users.js    registrering, innlogging, admin
 netlify/functions/okter.js    lagring av økter, én blob per økt
 ```
+
+Hver øvelse viser to strekfigurer — start og slutt — sammen med utførelsen og
+den vanligste feilen. Teksten følger styrkeprogrammet: 3 runder, minimal pause
+mellom øvelsene, 60 sekunder mellom rundene.
+
+## Én eller to manualer
+
+Feltet `manualer` på hver øvelse i `OVELSER` sier hvor mange manualer øvelsen
+krever, og vises som en merkelapp i kortet. Det er ikke kosmetikk: ved to
+manualer noteres vekta på **én** av dem, ikke summen. Uten den regelen blir
+tallene i loggen ikke sammenliknbare fra økt til økt.
+
+| Øvelse | Manualer |
+|---|---|
+| Goblet knebøy | 1 |
+| Manualpress stående | 2 |
+| Enarms roing | 1 |
+| Rumensk markløft | 2 |
+| Utfall | 2 |
 
 ## API
 
@@ -71,8 +91,10 @@ er ikke tatt i bruk i grensesnittet ennå, men backenden støtter det.
 ## Legge til flere øvelser
 
 Lista `OVELSER` øverst i skriptet i `index.html` styrer hele skjemaet. Legg til
-en rad med `id`, `navn` og `maal`, så følger både skjema og logg etter. Gamle
-økter mangler bare den nye øvelsen; ingenting går i stykker.
+en rad med `id`, `navn`, `maal`, `manualer`, `slik` og `feil`, så følger både
+skjema og logg etter. Vil du ha figurer på den nye øvelsen, legg inn to
+positurer under samme `id` i `figurer.js` — mangler de, vises bare teksten.
+Gamle økter mangler bare den nye øvelsen; ingenting går i stykker.
 
 ## Merk om sikkerhet
 

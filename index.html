@@ -158,6 +158,53 @@
     white-space: nowrap;
   }
 
+  /* Hvordan øvelsen gjøres: to strekfigurer + kort instruksjon. */
+  .hvordan {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    margin: 7px 0 9px 24px;
+    padding: 8px 9px;
+    background: var(--paper);
+    border: 1px solid var(--etch);
+    border-radius: 2px;
+  }
+  .figurer { display: flex; align-items: center; gap: 2px; flex: none; }
+  .fig { width: 46px; height: 64px; color: var(--ink); }
+  .fig .kropp {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .fig .fyll { fill: currentColor; stroke: none; }
+  .fig .bakke { stroke: var(--etch-sterk); stroke-width: 1.5; stroke-linecap: round; }
+  .fig .vekt { fill: var(--verdigris); }
+  .pil { color: var(--dust); font-size: 11px; }
+  .hvordan-tekst { min-width: 0; }
+  .hvordan-tekst .utstyr {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--verdigris);
+    margin: 0 0 3px;
+  }
+  .hvordan-tekst .slik {
+    margin: 0;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #4A545B;
+  }
+  .hvordan-tekst .feil {
+    margin: 4px 0 0;
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--rust);
+  }
+
   .forrige {
     font-size: 11.5px;
     color: var(--dust);
@@ -393,14 +440,38 @@
 </div>
 
 <script src="app-api.js"></script>
+<script src="figurer.js"></script>
 <script>
 (function () {
+  // Øvelsene, ordlyden hentet fra styrkeprogrammet.
+  // «manualer» sier hvor mange manualer øvelsen krever — det avgjør hva du
+  // fører inn: ved to manualer noteres vekta på én av dem, ikke summen.
   var OVELSER = [
-    { id: 'knebøy',   navn: 'Goblet knebøy',    maal: '3 × 10' },
-    { id: 'press',    navn: 'Manualpress',      maal: '3 × 8'  },
-    { id: 'roing',    navn: 'Enarms roing',     maal: '3 × 8 pr. arm' },
-    { id: 'markloft', navn: 'Rumensk markløft', maal: '3 × 10' },
-    { id: 'utfall',   navn: 'Utfall',           maal: '3 × 8 pr. bein' }
+    {
+      id: 'knebøy', navn: 'Goblet knebøy', maal: '10 reps', manualer: 1,
+      slik: 'Hold én manual mot brystet med begge hender. Gå ned til lårene er parallelle med gulvet, brystet opp. Press opp gjennom hælene.',
+      feil: 'Manualen for langt fram fra kroppen — da tipper du framover.'
+    },
+    {
+      id: 'press', navn: 'Manualpress stående', maal: '8 reps', manualer: 2,
+      slik: 'Manualer i skulderhøyde, håndflatene fram. Press rett opp over hodet til armene er strake. Kontrollert ned igjen.',
+      feil: 'Svai i korsryggen. Spenn magen — svaier du, er vekta for tung.'
+    },
+    {
+      id: 'roing', navn: 'Enarms roing', maal: '8 reps per arm', manualer: 1,
+      slik: 'Støtt hånd og kne på en benk eller stol. Ryggen flat som et bord. Dra manualen opp mot hofta, klem sammen i skulderbladet.',
+      feil: 'Å dra mot skulderen, eller rotere overkroppen for å jukse siste rep.'
+    },
+    {
+      id: 'markloft', navn: 'Rumensk markløft', maal: '10 reps', manualer: 2,
+      slik: 'Manualer foran lårene, nesten strake knær. Skyv hofta bakover mens manualene glir nedover lårene. Kjenn strekket bak i låret, så opp igjen.',
+      feil: 'Å gå ned som i knebøy. Hofta skal bakover, ikke ned.'
+    },
+    {
+      id: 'utfall', navn: 'Utfall', maal: '8 reps per fot', manualer: 2,
+      slik: 'Manual i hver hånd, armene rett ned. Ta et langt steg framover, senk bakre kne mot gulvet. Press deg tilbake til start.',
+      feil: 'Å lene overkroppen framover. Fremre kne over ankelen, ikke forbi tærne.'
+    }
   ];
 
   var okter = [];
@@ -433,13 +504,37 @@
       .replace(/"/g, '&quot;');
   }
 
+  // Hvor mange manualer øvelsen krever. Ved to er det vekta på ÉN manual som
+  // føres inn — ellers blir tallene i loggen ikke sammenliknbare.
+  function utstyrTekst(ov) {
+    return ov.manualer === 1 ? '1 manual' : '2 manualer — noter vekta på én';
+  }
+
+  // Figurene ligger i figurer.js. Skulle den filen mangle, faller blokka
+  // tilbake til bare tekst i stedet for å kaste.
+  function figurPar(id) {
+    var f = (typeof FIG !== 'undefined') && FIG[id];
+    if (!f) return '';
+    return '<div class="figurer">' + f[0] + '<span class="pil">→</span>' + f[1] + '</div>';
+  }
+
+  function hvordanBlokk(ov) {
+    return '<div class="hvordan">' + figurPar(ov.id) +
+      '<div class="hvordan-tekst">' +
+        '<p class="utstyr">' + utstyrTekst(ov) + '</p>' +
+        '<p class="slik">' + ov.slik + '</p>' +
+        '<p class="feil">Unngå: ' + ov.feil + '</p>' +
+      '</div></div>';
+  }
+
   // ===== Loggskjermen =====
   function tegn() {
     var rot = document.getElementById('innhold');
     rot.className = '';
 
     var h = '';
-    h += '<div class="banner">Fyll inn vekten du faktisk løftet og antall reps i den tyngste runden. Feltet under hver øvelse viser forrige økt — det er tallet du skal slå.</div>';
+    h += '<div class="banner"><b>3 runder</b> gjennom alle fem øvelsene. Minimal pause mellom øvelsene, 60 sekunder mellom rundene. De to siste repetisjonene skal kjennes tunge — klarer du 15 lett, er manualen for lett.' +
+         '<br><br>Før inn vekt og reps fra den tyngste runden. Neste økt tar du én repetisjon mer, eller går opp til neste manualvekt — det er at tallene kryper oppover som gir resultater.</div>';
 
     OVELSER.forEach(function (ov, i) {
       var sist = sisteFor(ov.id);
@@ -450,6 +545,8 @@
       h += '  <div class="rad-topp"><span class="nr">' + (i + 1) + '</span>';
       h += '    <span class="navn">' + ov.navn + '</span>';
       h += '    <span class="maal">' + ov.maal + '</span></div>';
+
+      h += hvordanBlokk(ov);
 
       if (sist) {
         h += '  <p class="forrige">Forrige: <b>' + sist.vekt + ' kg × ' + sist.reps + '</b></p>';
