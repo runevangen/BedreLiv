@@ -386,6 +386,200 @@
     margin: 14px 0 0;
   }
 
+  /* ===== Fokus: én øvelse i fullskjerm =====
+     For telefonen satt fra deg mellom settene — store tall, store knapper,
+     og skjermen holdes våken så den ikke sovner midt i en runde. */
+  .fokus-start {
+    width: 100%;
+    background: var(--verdigris);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    line-height: 1.15;
+  }
+  .fokus-start span {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+
+  #fokus {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: none;
+    flex-direction: column;
+    background: var(--paper);
+    color: var(--ink);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  #fokus.apen { display: flex; }
+  #fokus-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  .fokus-topp {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 0;
+  }
+  .fokus-teller {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dust);
+  }
+  .fokus-x {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--etch-sterk);
+    background: var(--plate);
+    color: var(--dust);
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fokus-strek {
+    height: 5px;
+    background: var(--etch);
+    border-radius: 3px;
+    margin: 11px 16px 0;
+    overflow: hidden;
+  }
+  .fokus-strek i { display: block; height: 100%; background: var(--verdigris); }
+
+  .fokus-rull { flex: 1; overflow-y: auto; min-height: 0; padding: 0 16px 14px; }
+
+  .fokus-figurer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 16px 0 0;
+  }
+  .fokus-figurer .fig { width: 104px; height: 145px; }
+  .fokus-figurer .pil { font-size: 17px; }
+
+  .fokus-navn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 1.05;
+    text-align: center;
+    margin: 10px 0 0;
+  }
+  .fokus-maal { text-align: center; font-size: 12.5px; color: var(--dust); margin: 5px 0 0; }
+  .fokus-maal b {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--verdigris);
+  }
+  .fokus-forrige {
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--dust);
+    margin: 16px 0 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .fokus-forrige b { color: var(--ink); font-weight: 600; }
+
+  .fokus-felter { display: flex; gap: 10px; margin-top: 10px; }
+  .fokus-felt { flex: 1; }
+  .fokus-felt label {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dust);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .fokus-felt input {
+    width: 100%;
+    background: var(--plate);
+    border: 1px solid var(--etch-sterk);
+    border-radius: 3px;
+    color: var(--ink);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 38px;
+    font-weight: 600;
+    padding: 8px 10px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .fokus-felt input:focus {
+    outline: 2px solid var(--verdigris);
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+  .fokus-felt input::placeholder { color: #A9B0AC; font-weight: 400; }
+
+  .fokus-dom {
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    min-height: 27px;
+    margin-top: 12px;
+  }
+
+  .fokus-slik { font-size: 13px; line-height: 1.55; color: #4A545B; margin: 16px 0 0; }
+  .fokus-feil { font-size: 12px; line-height: 1.5; color: var(--rust); margin: 6px 0 0; }
+  .fokus-vaken { text-align: center; font-size: 11px; color: var(--dust); margin: 14px 0 0; }
+
+  .fokus-bunn {
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px 14px;
+    border-top: 1px solid var(--etch);
+  }
+  .fokus-bunn button {
+    height: 54px;
+    border-radius: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .fokus-tilbake {
+    flex: 0 0 116px;
+    font-size: 15px;
+    white-space: nowrap;
+    border: 1px solid var(--etch-sterk);
+    background: var(--plate);
+    color: var(--dust);
+  }
+  .fokus-tilbake:disabled { opacity: 0.4; cursor: default; }
+  .fokus-fram { flex: 1; border: none; background: var(--verdigris); color: #FFFFFF; }
+  .fokus-fram:disabled { background: var(--etch); color: var(--dust); cursor: default; }
+
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
   }
@@ -437,6 +631,10 @@
   </div>
 
   <div id="innhold" class="laster" hidden>Henter loggen …</div>
+</div>
+
+<div id="fokus" aria-hidden="true">
+  <div id="fokus-body"></div>
 </div>
 
 <script src="app-api.js"></script>
@@ -512,14 +710,14 @@
 
   // Figurene ligger i figurer.js. Skulle den filen mangle, faller blokka
   // tilbake til bare tekst i stedet for å kaste.
-  function figurPar(id) {
+  function figurPar(id, klasse) {
     var f = (typeof FIG !== 'undefined') && FIG[id];
     if (!f) return '';
-    return '<div class="figurer">' + f[0] + '<span class="pil">→</span>' + f[1] + '</div>';
+    return '<div class="' + klasse + '">' + f[0] + '<span class="pil">→</span>' + f[1] + '</div>';
   }
 
   function hvordanBlokk(ov) {
-    return '<div class="hvordan">' + figurPar(ov.id) +
+    return '<div class="hvordan">' + figurPar(ov.id, 'figurer') +
       '<div class="hvordan-tekst">' +
         '<p class="utstyr">' + utstyrTekst(ov) + '</p>' +
         '<p class="slik">' + ov.slik + '</p>' +
@@ -535,6 +733,9 @@
     var h = '';
     h += '<div class="banner"><b>3 runder</b> gjennom alle fem øvelsene. Minimal pause mellom øvelsene, 60 sekunder mellom rundene. De to siste repetisjonene skal kjennes tunge — klarer du 15 lett, er manualen for lett.' +
          '<br><br>Før inn vekt og reps fra den tyngste runden. Neste økt tar du én repetisjon mer, eller går opp til neste manualvekt — det er at tallene kryper oppover som gir resultater.</div>';
+
+    h += '<button class="fokus-start" id="fokus-start">Fokus' +
+         '<span>én øvelse om gangen · store tall · skjermen sovner ikke</span></button>';
 
     OVELSER.forEach(function (ov, i) {
       var sist = sisteFor(ov.id);
@@ -614,6 +815,9 @@
 
     var s = document.getElementById('slett');
     if (s) s.addEventListener('click', tomLogg);
+
+    var f = document.getElementById('fokus-start');
+    if (f) f.addEventListener('click', apneFokus);
   }
 
   function oppdaterRad(ov) {
@@ -657,7 +861,7 @@
   }
 
   // ===== Lagring mot backend =====
-  function lagre() {
+  function lagre(fraFokus) {
     var ovelser = {};
     OVELSER.forEach(function (ov) {
       var u = utkast[ov.id] || {};
@@ -665,20 +869,29 @@
     });
     if (!Object.keys(ovelser).length) return;
 
-    var knapp = document.getElementById('lagre');
+    var knapp = document.getElementById(fraFokus ? 'fokus-fram' : 'lagre');
+    var opprinnelig = knapp ? knapp.textContent : '';
     if (knapp) { knapp.disabled = true; knapp.textContent = 'Lagrer …'; }
 
     Api.saveOkt(ovelser).then(function (okt) {
       okter.push(okt);
       okter.sort(function (a, b) { return new Date(a.dato) - new Date(b.dato); });
       utkast = {};
+      // Lagret fra fokus: lukk stille og la loggskjermen bak vise kvitteringen.
+      if (fraFokus) lukkFokus(true);
       tegn();
       oppdaterAntall();
       kvittering('Økta er lagret.', false);
     }).catch(function (e) {
       // Utkastet står igjen i feltene, så løftene ikke går tapt om nettet svikter.
-      if (knapp) { knapp.disabled = false; knapp.textContent = 'Lagre økta'; }
-      kvittering(e.message || 'Kunne ikke lagre økta.', true);
+      if (knapp) { knapp.disabled = false; knapp.textContent = opprinnelig; }
+      var melding = e.message || 'Kunne ikke lagre økta.';
+      if (fraFokus) {
+        var v = document.getElementById('fokus-vaken');
+        if (v) { v.textContent = melding; v.style.color = 'var(--rust)'; }
+      } else {
+        kvittering(melding, true);
+      }
     });
   }
 
@@ -710,6 +923,153 @@
       okter = liste;
       tegn();
       oppdaterAntall();
+    });
+  }
+
+  // ===== Fokus: én øvelse i fullskjerm =====
+  // Bruksmønsteret er hele begrunnelsen: telefonen ligger på benken mellom
+  // settene, du har manualer i hendene og vil ikke sikte på små felter eller
+  // se skjermen sovne midt i en runde.
+  var fokusIdx = 0;
+  var fokusWake = null;
+
+  function fokusErApen() {
+    return document.getElementById('fokus').classList.contains('apen');
+  }
+
+  // Wake Lock finnes ikke i alle nettlesere. Feiler den, går fokus fint
+  // uten — vi lover bare våken skjerm når vi faktisk har fått låsen.
+  function taWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    navigator.wakeLock.request('screen').then(function (l) {
+      fokusWake = l;
+      var v = document.getElementById('fokus-vaken');
+      if (v) v.textContent = 'Skjermen holdes våken';
+    }).catch(function () { fokusWake = null; });
+  }
+
+  function slippWakeLock() {
+    try { if (fokusWake) fokusWake.release(); } catch (e) {}
+    fokusWake = null;
+  }
+
+  function apneFokus() {
+    // Start på første øvelse som ikke er ferdig utfylt — der du sannsynligvis er.
+    var start = -1;
+    for (var i = 0; i < OVELSER.length; i++) {
+      var u = utkast[OVELSER[i].id] || {};
+      if (!(u.vekt && u.reps)) { start = i; break; }
+    }
+    fokusIdx = start >= 0 ? start : 0;
+    document.getElementById('fokus').classList.add('apen');
+    document.getElementById('fokus').setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    taWakeLock();
+    tegnFokus();
+  }
+
+  function lukkFokus(stille) {
+    document.getElementById('fokus').classList.remove('apen');
+    document.getElementById('fokus').setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    slippWakeLock();
+    // Tallene du skrev i fokus skal stå i lista bak når du kommer tilbake.
+    if (!stille) tegn();
+  }
+
+  function fokusGaTil(i) {
+    if (i < 0 || i >= OVELSER.length) return;
+    fokusIdx = i;
+    tegnFokus();
+  }
+
+  function tegnFokus() {
+    var ov = OVELSER[fokusIdx];
+    var sist = sisteFor(ov.id);
+    var u = utkast[ov.id] || {};
+    var siste = fokusIdx === OVELSER.length - 1;
+    var andel = Math.round((fokusIdx + 1) / OVELSER.length * 100);
+
+    var h = '';
+    h += '<div class="fokus-topp">';
+    h += '  <span class="fokus-teller">Øvelse ' + (fokusIdx + 1) + ' av ' + OVELSER.length + '</span>';
+    h += '  <button class="fokus-x" id="fokus-lukk" aria-label="Lukk fokus">✕</button>';
+    h += '</div>';
+    h += '<div class="fokus-strek"><i style="width:' + andel + '%"></i></div>';
+
+    h += '<div class="fokus-rull">';
+    h += figurPar(ov.id, 'fokus-figurer');
+    h += '  <h2 class="fokus-navn">' + ov.navn + '</h2>';
+    h += '  <p class="fokus-maal">' + ov.maal + ' · <b>' + utstyrTekst(ov) + '</b></p>';
+
+    if (sist) {
+      h += '  <p class="fokus-forrige">Forrige: <b>' + sist.vekt + ' kg × ' + sist.reps + '</b> — det er tallet du skal slå.</p>';
+    } else {
+      h += '  <p class="fokus-forrige">Ingen tidligere logg — dette blir utgangspunktet.</p>';
+    }
+
+    h += '  <div class="fokus-felter">';
+    h += '    <div class="fokus-felt"><label for="fv">Vekt (kg)</label>';
+    h += '      <input id="fv" type="number" inputmode="decimal" step="0.5" min="0" placeholder="–" value="' + (u.vekt != null ? u.vekt : '') + '"></div>';
+    h += '    <div class="fokus-felt"><label for="fr">Reps</label>';
+    h += '      <input id="fr" type="number" inputmode="numeric" step="1" min="0" placeholder="–" value="' + (u.reps != null ? u.reps : '') + '"></div>';
+    h += '  </div>';
+    h += '  <div class="fokus-dom" id="fokus-dom"></div>';
+
+    h += '  <p class="fokus-slik">' + ov.slik + '</p>';
+    h += '  <p class="fokus-feil">Unngå: ' + ov.feil + '</p>';
+    h += '  <p class="fokus-vaken" id="fokus-vaken">' + (fokusWake ? 'Skjermen holdes våken' : '') + '</p>';
+    h += '</div>';
+
+    h += '<div class="fokus-bunn">';
+    h += '  <button class="fokus-tilbake" id="fokus-tilbake"' + (fokusIdx === 0 ? ' disabled' : '') + '>← Forrige</button>';
+    h += '  <button class="fokus-fram" id="fokus-fram">' + (siste ? 'Lagre økta' : 'Neste →') + '</button>';
+    h += '</div>';
+
+    document.getElementById('fokus-body').innerHTML = h;
+    koblingerFokus(siste);
+    oppdaterFokusDom();
+  }
+
+  // Dommen oppdateres for seg, ikke ved å tegne hele skjermen på nytt — ellers
+  // mister feltet du skriver i markøren for hvert tastetrykk.
+  function oppdaterFokusDom() {
+    var ov = OVELSER[fokusIdx];
+    var u = utkast[ov.id] || {};
+    var sist = sisteFor(ov.id);
+    var dom = document.getElementById('fokus-dom');
+    if (!dom) return;
+    if (sist && u.vekt && u.reps) {
+      var diff = volum(u.vekt, u.reps) - volum(sist.vekt, sist.reps);
+      dom.className = 'fokus-dom ' + (diff > 0 ? 'opp' : diff < 0 ? 'ned' : 'likt');
+      dom.textContent = diff > 0 ? '▲ opp' : diff < 0 ? '▼ ned' : '= likt';
+    } else {
+      dom.className = 'fokus-dom';
+      dom.textContent = '';
+    }
+    var fram = document.getElementById('fokus-fram');
+    if (fram && fokusIdx === OVELSER.length - 1) fram.disabled = !harUtkast();
+  }
+
+  function koblingerFokus(siste) {
+    document.getElementById('fokus-lukk').addEventListener('click', function () { lukkFokus(); });
+
+    var tilbake = document.getElementById('fokus-tilbake');
+    tilbake.addEventListener('click', function () { fokusGaTil(fokusIdx - 1); });
+
+    document.getElementById('fokus-fram').addEventListener('click', function () {
+      if (siste) lagre(true);
+      else fokusGaTil(fokusIdx + 1);
+    });
+
+    var ov = OVELSER[fokusIdx];
+    [['fv', 'vekt'], ['fr', 'reps']].forEach(function (par) {
+      var el = document.getElementById(par[0]);
+      el.addEventListener('input', function () {
+        if (!utkast[ov.id]) utkast[ov.id] = {};
+        utkast[ov.id][par[1]] = el.value === '' ? null : parseFloat(el.value);
+        oppdaterFokusDom();
+      });
     });
   }
 
@@ -829,6 +1189,23 @@
   function start() {
     document.getElementById('idag').textContent = datoTekst(new Date().toISOString());
     koblePort();
+
+    // Piltaster og Escape i fokus. Står markøren i et tallfelt, skal pilene
+    // flytte markøren som vanlig — ikke bla til neste øvelse.
+    document.addEventListener('keydown', function (e) {
+      if (!fokusErApen()) return;
+      if (e.key === 'Escape') { lukkFokus(); return; }
+      if (e.target && e.target.tagName === 'INPUT') return;
+      if (e.key === 'ArrowRight') fokusGaTil(fokusIdx + 1);
+      else if (e.key === 'ArrowLeft') fokusGaTil(fokusIdx - 1);
+    });
+
+    // Nettleseren slipper Wake Lock når appen går i bakgrunnen. Er fokus
+    // fortsatt åpent når du kommer tilbake, tar vi den igjen.
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && fokusErApen()) taWakeLock();
+    });
+
     if (Api.currentUser()) visApp();
     else visPort();
   }

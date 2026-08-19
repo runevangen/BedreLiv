@@ -21,6 +21,20 @@ Hver øvelse viser to strekfigurer — start og slutt — sammen med utførelsen
 den vanligste feilen. Teksten følger styrkeprogrammet: 3 runder, minimal pause
 mellom øvelsene, 60 sekunder mellom rundene.
 
+## Fokus
+
+Knappen øverst i loggen åpner **fokus**: én øvelse i fullskjerm, med store
+figurer, store tallfelter og ett trykk videre. Laget for telefonen på benken
+mellom settene.
+
+- Åpner på første øvelse som ikke er fylt ut ennå
+- `←`/`→` blar, `Escape` lukker (pilene lar tallfeltene være i fred)
+- Siste øvelse lagrer hele økta og lukker fokus
+- Skjermen holdes våken via Wake Lock, der nettleseren støtter det
+
+Utkastet er felles med loggskjermen, så tall skrevet i fokus står i lista
+etterpå — og motsatt.
+
 ## Én eller to manualer
 
 Feltet `manualer` på hver øvelse i `OVELSER` sier hvor mange manualer øvelsen
