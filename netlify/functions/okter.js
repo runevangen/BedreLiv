@@ -1,0 +1,165 @@
+import { getStore } from '@netlify/blobs';
+
+// Loggførte styrkeøkter — én blob per økt. Samme mønster som bakes.js i
+// pizzame: hver økt eies av den som lagret den, og er privat som standard.
+//
+// GET    /api/okter?userId=X         -> egne økter (+ delte, + eldre uten eier)
+// GET    /api/okter?admin=PASSWORD   -> alle (admin)
+// POST   /api/okter                  -> ny økt { ownerId, dato, ovelser, savedBy?, shared? }
+// PATCH  /api/okter/:id              -> rett opp en økt { userId, ovelser?, dato?, shared? }
+// DELETE /api/okter/:id?userId=X     -> slett (kun eier eller admin)
+//
+// Admin-passord settes som miljøvariabelen ADMIN_PASSWORD i Netlify. Er den
+// ikke satt, er admin-tilgangen avslått.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+
+const STORE_OKTER = 'bedreliv-okter';
+
+// Så mange øvelser kan én økt inneholde. Programmet har fem; taket er bare et
+// vern mot at en rusk-klient sender inn noe absurd.
+const MAKS_OVELSER = 40;
+
+function json(status, body) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+function idFromPath(path) {
+  const parts = path.split('/').filter(Boolean);
+  return parts[parts.length - 1];
+}
+
+function isAdminPw(pw) {
+  return !!ADMIN_PASSWORD && !!pw && pw === ADMIN_PASSWORD;
+}
+
+// Økter uten eier er åpne (bakoverkompatibelt), eide økter er private til de
+// deles. Eieren har alltid tilgang.
+function isPublic(okt) { return !okt.ownerId || okt.shared === true; }
+function ownedBy(okt, userId) { return okt.ownerId && userId && okt.ownerId === userId; }
+
+function cleanStr(v, max) {
+  return typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null;
+}
+
+// Vasker { knebøy: { vekt, reps }, ... } til rene tall. Alt som ikke er et
+// gyldig løft faller ut, så en halvutfylt rad aldri havner i loggen.
+function cleanOvelser(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const ut = {};
+  let n = 0;
+  for (const [key, val] of Object.entries(raw)) {
+    if (n >= MAKS_OVELSER) break;
+    if (!val || typeof val !== 'object') continue;
+    const vekt = Number(val.vekt);
+    const reps = Number(val.reps);
+    if (!Number.isFinite(vekt) || !Number.isFinite(reps)) continue;
+    if (vekt <= 0 || reps <= 0) continue;
+    if (vekt > 1000 || reps > 1000) continue;
+    ut[String(key).slice(0, 40)] = { vekt, reps };
+    n++;
+  }
+  return Object.keys(ut).length ? ut : null;
+}
+
+function cleanDato(v) {
+  if (typeof v !== 'string') return null;
+  const t = Date.parse(v);
+  return Number.isFinite(t) ? new Date(t).toISOString() : null;
+}
+
+export default async (req) => {
+  const store = getStore(STORE_OKTER);
+  const url = new URL(req.url);
+  const isCollection = url.pathname.endsWith('/okter') || url.pathname.endsWith('/okter/');
+
+  try {
+    if (req.method === 'GET') {
+      const userId = url.searchParams.get('userId') || null;
+      const isAdmin = isAdminPw(url.searchParams.get('admin'));
+      const { blobs } = await store.list();
+      // Isoler hver post: én korrupt blob skal ikke velte hele loggen.
+      const raw = await Promise.all(
+        blobs.map(async (b) => {
+          try {
+            return await store.get(b.key, { type: 'json' });
+          } catch (err) {
+            console.error('Kunne ikke lese økt', b.key, err && err.message);
+            return null;
+          }
+        })
+      );
+      let okter = raw.filter((x) => x && typeof x === 'object');
+      if (!isAdmin) okter = okter.filter((o) => isPublic(o) || ownedBy(o, userId));
+      // Eldst først — front-end regner «forrige økt» ut fra rekkefølgen.
+      okter.sort((a, b) => new Date(a.dato || 0) - new Date(b.dato || 0));
+      return json(200, { okter });
+    }
+
+    if (req.method === 'POST' && isCollection) {
+      const body = await req.json();
+      const ovelser = cleanOvelser(body.ovelser);
+      if (!ovelser) return json(400, { error: 'Økta inneholder ingen gyldige løft' });
+      const id = 'okt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      const okt = {
+        id,
+        ownerId: cleanStr(body.ownerId, 64),
+        savedBy: cleanStr(body.savedBy, 40),
+        shared: body.shared === true,
+        dato: cleanDato(body.dato) || new Date().toISOString(),
+        ovelser,
+        savedAt: new Date().toISOString()
+      };
+      await store.setJSON(id, okt);
+      return json(201, okt);
+    }
+
+    if (req.method === 'PATCH') {
+      const id = idFromPath(url.pathname);
+      if (!id) return json(400, { error: 'Mangler id' });
+      const existing = await store.get(id, { type: 'json' });
+      if (!existing) return json(404, { error: 'Fant ikke økta' });
+      const body = await req.json();
+      // Eierskapsvakt: en eid økt kan bare endres av eieren eller admin.
+      if (existing.ownerId && !isAdminPw(body.admin) && body.userId !== existing.ownerId) {
+        return json(403, { error: 'Bare eieren kan endre denne økta' });
+      }
+      const updated = { ...existing };
+      if (body.ovelser !== undefined) {
+        const ovelser = cleanOvelser(body.ovelser);
+        if (!ovelser) return json(400, { error: 'Økta inneholder ingen gyldige løft' });
+        updated.ovelser = ovelser;
+      }
+      const dato = cleanDato(body.dato);
+      if (dato) updated.dato = dato;
+      if (typeof body.shared === 'boolean') updated.shared = body.shared;
+      updated.updatedAt = new Date().toISOString();
+      await store.setJSON(id, updated);
+      return json(200, updated);
+    }
+
+    if (req.method === 'DELETE') {
+      const id = idFromPath(url.pathname);
+      if (!id) return json(400, { error: 'Mangler id' });
+      // Eierskapsvakt via query-parametre, siden DELETE-body er upålitelig i
+      // enkelte klienter.
+      const existing = await store.get(id, { type: 'json' });
+      if (existing && existing.ownerId) {
+        const isAdmin = isAdminPw(url.searchParams.get('admin'));
+        if (!isAdmin && url.searchParams.get('userId') !== existing.ownerId) {
+          return json(403, { error: 'Bare eieren kan slette denne økta' });
+        }
+      }
+      await store.delete(id);
+      return json(200, { deleted: id });
+    }
+
+    return json(405, { error: 'Metode ikke støttet' });
+  } catch (e) {
+    return json(500, { error: e.message || 'Ukjent feil' });
+  }
+};
+
+export const config = { path: ['/api/okter', '/api/okter/:id'] };

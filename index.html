@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3F4F1">
+<title>Styrkelogg</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F3F4F1;
+    --plate: #FFFFFF;
+    --etch: #D9DCD6;
+    --etch-sterk: #C2C7BF;
+    --ink: #1A2127;
+    --dust: #6B757C;
+    --verdigris: #1E7D6B;
+    --verdigris-lys: #E8F3F0;
+    --rust: #A8452F;
+  }
+
+  * { box-sizing: border-box; }
+
+  /* Klasser som setter display (f.eks. .bruker med flex) overstyrer ellers
+     hidden-attributtet, og elementet blir stående synlig. */
+  [hidden] { display: none !important; }
+
+  html, body { margin: 0; background: var(--paper); }
+
+  #app {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    padding: 18px 14px 40px;
+    min-height: 100vh;
+    max-width: 560px;
+    margin: 0 auto;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+  }
+  .kicker {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dust);
+    margin: 0 0 2px;
+  }
+  .masthead h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 34px;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--dust);
+  }
+  .meta strong {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* Innlogget bruker, under metalinja i mastheaden. */
+  .bruker {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--dust);
+  }
+  .bruker b {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .lenke {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--verdigris);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .lenke:hover { color: var(--ink); }
+
+  .banner {
+    background: var(--verdigris-lys);
+    border-left: 3px solid var(--verdigris);
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #3A4A47;
+    margin-bottom: 18px;
+  }
+
+  .rad {
+    background: var(--plate);
+    border: 1px solid var(--etch);
+    border-radius: 3px;
+    padding: 12px 12px 10px;
+    margin-bottom: 10px;
+    transition: border-color .18s ease, box-shadow .18s ease;
+  }
+  .rad.slatt {
+    border-color: var(--verdigris);
+    box-shadow: inset 3px 0 0 var(--verdigris);
+  }
+
+  .rad-topp {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .nr {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dust);
+    min-width: 16px;
+  }
+  .navn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    flex: 1;
+  }
+  .maal {
+    font-size: 11px;
+    color: var(--dust);
+    white-space: nowrap;
+  }
+
+  .forrige {
+    font-size: 11.5px;
+    color: var(--dust);
+    margin: 0 0 9px 24px;
+    font-variant-numeric: tabular-nums;
+  }
+  .forrige b { color: var(--ink); font-weight: 600; }
+
+  .felter {
+    display: flex;
+    gap: 8px;
+    margin-left: 24px;
+    align-items: flex-end;
+  }
+  .felt { flex: 1; }
+  .felt label {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dust);
+    margin-bottom: 3px;
+  }
+  .felt input {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--etch-sterk);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    padding: 7px 9px;
+    font-variant-numeric: tabular-nums;
+  }
+  .felt input:focus {
+    outline: 2px solid var(--verdigris);
+    outline-offset: 1px;
+    border-color: transparent;
+    background: var(--plate);
+  }
+  .felt input::placeholder { color: #A9B0AC; font-weight: 400; }
+
+  .dommen {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-bottom: 9px;
+    white-space: nowrap;
+    min-width: 52px;
+    text-align: right;
+  }
+  .opp { color: var(--verdigris); }
+  .likt { color: var(--dust); }
+  .ned { color: var(--rust); }
+
+  .lagre {
+    width: 100%;
+    background: var(--verdigris);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px;
+    margin-top: 8px;
+    cursor: pointer;
+  }
+  .lagre:disabled { background: var(--etch); color: var(--dust); cursor: default; }
+  .lagre:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .kvittering {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--verdigris);
+    margin-top: 10px;
+    min-height: 18px;
+  }
+  .kvittering.feil { color: var(--rust); }
+
+  h2.seksjon {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dust);
+    border-bottom: 1px solid var(--etch-sterk);
+    padding-bottom: 6px;
+    margin: 30px 0 12px;
+    font-weight: 600;
+  }
+
+  .okt {
+    border-bottom: 1px solid var(--etch);
+    padding: 10px 0;
+  }
+  .okt-dato {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .okt-tall {
+    font-size: 11.5px;
+    color: var(--dust);
+    margin-top: 4px;
+    line-height: 1.7;
+    font-variant-numeric: tabular-nums;
+  }
+  .okt-tall span { display: inline-block; margin-right: 12px; }
+
+  .tomt {
+    color: var(--dust);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 4px 0 8px;
+  }
+
+  .laster { color: var(--dust); font-size: 13px; padding: 20px 0; text-align: center; }
+
+  .fot {
+    margin-top: 26px;
+    display: flex;
+    justify-content: center;
+  }
+  .slett {
+    background: none;
+    border: 1px solid var(--etch-sterk);
+    color: var(--dust);
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    padding: 7px 14px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .slett:hover { border-color: var(--rust); color: var(--rust); }
+  .slett:disabled { cursor: default; opacity: .6; }
+
+  /* ===== Innloggingsport ===== */
+  .port { padding-top: 4px; }
+  .port-hjelp {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--dust);
+    margin: 0 0 16px;
+  }
+  .port-rad {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  /* Egne inputstiler i porten: navn og PIN leses bedre i Inter enn i den
+     kondenserte tallskriften, og 18px hindrer at iOS zoomer inn ved fokus. */
+  .port .felt input {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    padding: 10px 11px;
+    background: var(--plate);
+  }
+  .port-feil {
+    color: var(--rust);
+    font-size: 12.5px;
+    line-height: 1.5;
+    min-height: 18px;
+    margin: 2px 0 0;
+  }
+  .port-bytt {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--dust);
+    margin: 14px 0 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="masthead">
+    <p class="kicker">10-minutters manualprogram</p>
+    <h1>Styrkelogg</h1>
+    <div class="meta">
+      <span>Økter loggført: <strong id="antall">–</strong></span>
+      <span id="idag">–</span>
+    </div>
+    <div class="bruker" id="bruker" hidden>
+      <span>Innlogget som <b id="bruker-navn"></b></span>
+      <button type="button" class="lenke" id="logg-ut">Logg ut</button>
+    </div>
+  </div>
+
+  <div class="port" id="port" hidden>
+    <h2 class="seksjon" id="port-tittel">Logg inn</h2>
+    <p class="port-hjelp" id="port-hjelp">Navnet ditt og PIN-en du valgte.</p>
+
+    <div class="port-rad">
+      <div class="felt">
+        <label for="p-navn">Navn</label>
+        <input id="p-navn" type="text" maxlength="40" autocomplete="username" autocapitalize="words">
+      </div>
+    </div>
+    <div class="port-rad">
+      <div class="felt">
+        <label for="p-pin">PIN — 4 siffer</label>
+        <input id="p-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password">
+      </div>
+      <div class="felt" id="p-pin2-boks" hidden>
+        <label for="p-pin2">Gjenta PIN</label>
+        <input id="p-pin2" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password">
+      </div>
+    </div>
+
+    <p class="port-feil" id="port-feil"></p>
+    <button class="lagre" id="port-knapp">Logg inn</button>
+    <p class="port-bytt">
+      <span id="port-bytt-tekst">Ny her?</span>
+      <button type="button" class="lenke" id="port-bytt">Registrer deg</button>
+    </p>
+  </div>
+
+  <div id="innhold" class="laster" hidden>Henter loggen …</div>
+</div>
+
+<script src="app-api.js"></script>
+<script>
+(function () {
+  var OVELSER = [
+    { id: 'knebøy',   navn: 'Goblet knebøy',    maal: '3 × 10' },
+    { id: 'press',    navn: 'Manualpress',      maal: '3 × 8'  },
+    { id: 'roing',    navn: 'Enarms roing',     maal: '3 × 8 pr. arm' },
+    { id: 'markloft', navn: 'Rumensk markløft', maal: '3 × 10' },
+    { id: 'utfall',   navn: 'Utfall',           maal: '3 × 8 pr. bein' }
+  ];
+
+  var okter = [];
+  var utkast = {};
+  var portModus = 'inn'; // 'inn' | 'ny'
+
+  function volum(v, r) { return (v || 0) * (r || 0); }
+
+  // Loggen ligger eldst først, så bakoverløkka finner siste økt med et løft.
+  function sisteFor(id) {
+    for (var i = okter.length - 1; i >= 0; i--) {
+      var o = okter[i].ovelser[id];
+      if (o && o.vekt) return o;
+    }
+    return null;
+  }
+
+  function datoTekst(iso) {
+    var d = new Date(iso);
+    var dager = ['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'];
+    var mnd = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
+    return dager[d.getDay()] + ' ' + d.getDate() + '. ' + mnd[d.getMonth()];
+  }
+
+  // Teksten kommer fra brukeren (navn) og fra serverens feilmeldinger, så den
+  // må aldri tolkes som markup når den settes inn i en innerHTML-streng.
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ===== Loggskjermen =====
+  function tegn() {
+    var rot = document.getElementById('innhold');
+    rot.className = '';
+
+    var h = '';
+    h += '<div class="banner">Fyll inn vekten du faktisk løftet og antall reps i den tyngste runden. Feltet under hver øvelse viser forrige økt — det er tallet du skal slå.</div>';
+
+    OVELSER.forEach(function (ov, i) {
+      var sist = sisteFor(ov.id);
+      var u = utkast[ov.id] || {};
+      var slatt = sist && volum(u.vekt, u.reps) > volum(sist.vekt, sist.reps);
+
+      h += '<div class="rad' + (slatt ? ' slatt' : '') + '" id="rad-' + ov.id + '">';
+      h += '  <div class="rad-topp"><span class="nr">' + (i + 1) + '</span>';
+      h += '    <span class="navn">' + ov.navn + '</span>';
+      h += '    <span class="maal">' + ov.maal + '</span></div>';
+
+      if (sist) {
+        h += '  <p class="forrige">Forrige: <b>' + sist.vekt + ' kg × ' + sist.reps + '</b></p>';
+      } else {
+        h += '  <p class="forrige">Ingen tidligere logg — dette blir utgangspunktet.</p>';
+      }
+
+      h += '  <div class="felter">';
+      h += '    <div class="felt"><label for="v-' + ov.id + '">Vekt (kg)</label>';
+      h += '      <input id="v-' + ov.id + '" type="number" inputmode="decimal" step="0.5" min="0" placeholder="–" value="' + (u.vekt != null ? u.vekt : '') + '"></div>';
+      h += '    <div class="felt"><label for="r-' + ov.id + '">Reps</label>';
+      h += '      <input id="r-' + ov.id + '" type="number" inputmode="numeric" step="1" min="0" placeholder="–" value="' + (u.reps != null ? u.reps : '') + '"></div>';
+
+      var d = '', k = 'likt';
+      if (sist && u.vekt && u.reps) {
+        var diff = volum(u.vekt, u.reps) - volum(sist.vekt, sist.reps);
+        if (diff > 0) { d = '▲ opp'; k = 'opp'; }
+        else if (diff < 0) { d = '▼ ned'; k = 'ned'; }
+        else { d = '= likt'; k = 'likt'; }
+      }
+      h += '    <div class="dommen ' + k + '">' + d + '</div>';
+      h += '  </div></div>';
+    });
+
+    h += '<button class="lagre" id="lagre"' + (harUtkast() ? '' : ' disabled') + '>Lagre økta</button>';
+    h += '<p class="kvittering" id="kvittering"></p>';
+
+    h += '<h2 class="seksjon">Loggen</h2>';
+    if (!okter.length) {
+      h += '<p class="tomt">Ingen økter ennå. Første økt setter utgangspunktet — det er den eneste som ikke kan slås.</p>';
+    } else {
+      for (var j = okter.length - 1; j >= 0; j--) {
+        var o = okter[j];
+        h += '<div class="okt"><div class="okt-dato">' + datoTekst(o.dato) + '</div><div class="okt-tall">';
+        OVELSER.forEach(function (ov) {
+          var e = o.ovelser[ov.id];
+          if (e && e.vekt) h += '<span>' + ov.navn.split(' ')[0] + ' ' + e.vekt + '×' + e.reps + '</span>';
+        });
+        h += '</div></div>';
+      }
+      h += '<div class="fot"><button class="slett" id="slett">Tøm hele loggen</button></div>';
+    }
+
+    rot.innerHTML = h;
+    koble();
+  }
+
+  function koble() {
+    OVELSER.forEach(function (ov) {
+      ['v', 'r'].forEach(function (p) {
+        var el = document.getElementById(p + '-' + ov.id);
+        if (!el) return;
+        el.addEventListener('input', function () {
+          if (!utkast[ov.id]) utkast[ov.id] = {};
+          var tall = el.value === '' ? null : parseFloat(el.value);
+          utkast[ov.id][p === 'v' ? 'vekt' : 'reps'] = tall;
+          oppdaterRad(ov);
+          oppdaterKnapp();
+        });
+      });
+    });
+
+    var l = document.getElementById('lagre');
+    if (l) l.addEventListener('click', lagre);
+
+    var s = document.getElementById('slett');
+    if (s) s.addEventListener('click', tomLogg);
+  }
+
+  function oppdaterRad(ov) {
+    var u = utkast[ov.id] || {};
+    var sist = sisteFor(ov.id);
+    var rad = document.getElementById('rad-' + ov.id);
+    var dom = rad.querySelector('.dommen');
+    if (sist && u.vekt && u.reps) {
+      var diff = volum(u.vekt, u.reps) - volum(sist.vekt, sist.reps);
+      dom.className = 'dommen ' + (diff > 0 ? 'opp' : diff < 0 ? 'ned' : 'likt');
+      dom.textContent = diff > 0 ? '▲ opp' : diff < 0 ? '▼ ned' : '= likt';
+      rad.classList.toggle('slatt', diff > 0);
+    } else {
+      dom.textContent = '';
+      rad.classList.remove('slatt');
+    }
+  }
+
+  function harUtkast() {
+    return OVELSER.some(function (ov) {
+      var u = utkast[ov.id] || {};
+      return u.vekt && u.reps;
+    });
+  }
+
+  function oppdaterKnapp() {
+    var l = document.getElementById('lagre');
+    if (l) l.disabled = !harUtkast();
+  }
+
+  function kvittering(tekst, erFeil) {
+    var k = document.getElementById('kvittering');
+    if (!k) return;
+    k.textContent = tekst;
+    k.className = 'kvittering' + (erFeil ? ' feil' : '');
+  }
+
+  function oppdaterAntall() {
+    var a = document.getElementById('antall');
+    if (a) a.textContent = okter.length;
+  }
+
+  // ===== Lagring mot backend =====
+  function lagre() {
+    var ovelser = {};
+    OVELSER.forEach(function (ov) {
+      var u = utkast[ov.id] || {};
+      if (u.vekt && u.reps) ovelser[ov.id] = { vekt: u.vekt, reps: u.reps };
+    });
+    if (!Object.keys(ovelser).length) return;
+
+    var knapp = document.getElementById('lagre');
+    if (knapp) { knapp.disabled = true; knapp.textContent = 'Lagrer …'; }
+
+    Api.saveOkt(ovelser).then(function (okt) {
+      okter.push(okt);
+      okter.sort(function (a, b) { return new Date(a.dato) - new Date(b.dato); });
+      utkast = {};
+      tegn();
+      oppdaterAntall();
+      kvittering('Økta er lagret.', false);
+    }).catch(function (e) {
+      // Utkastet står igjen i feltene, så løftene ikke går tapt om nettet svikter.
+      if (knapp) { knapp.disabled = false; knapp.textContent = 'Lagre økta'; }
+      kvittering(e.message || 'Kunne ikke lagre økta.', true);
+    });
+  }
+
+  function tomLogg() {
+    if (!okter.length) return;
+    if (!confirm('Sletter alle ' + okter.length + ' øktene. Dette kan ikke angres.')) return;
+
+    var knapp = document.getElementById('slett');
+    if (knapp) { knapp.disabled = true; knapp.textContent = 'Sletter …'; }
+
+    Promise.all(okter.map(function (o) { return Api.deleteOkt(o.id); })).then(function () {
+      okter = [];
+      tegn();
+      oppdaterAntall();
+      kvittering('Loggen er tømt.', false);
+    }).catch(function (e) {
+      // Noen økter kan ha blitt slettet før det stoppet opp. Hent på nytt, så
+      // skjermen viser det som faktisk står igjen på serveren.
+      var melding = e.message || 'Kunne ikke tømme loggen.';
+      lastOkter().then(function () { kvittering(melding, true); }).catch(function () {
+        if (knapp) { knapp.disabled = false; knapp.textContent = 'Tøm hele loggen'; }
+        kvittering(melding, true);
+      });
+    });
+  }
+
+  function lastOkter() {
+    return Api.listOkter().then(function (liste) {
+      okter = liste;
+      tegn();
+      oppdaterAntall();
+    });
+  }
+
+  // ===== Innlogging =====
+  function portFeil(tekst) {
+    document.getElementById('port-feil').textContent = tekst || '';
+  }
+
+  function settPortModus(m) {
+    portModus = m;
+    var ny = m === 'ny';
+    document.getElementById('port-tittel').textContent = ny ? 'Ny bruker' : 'Logg inn';
+    document.getElementById('port-hjelp').textContent = ny
+      ? 'Velg et navn og en firesifret PIN. Loggen din er privat — bare du ser den.'
+      : 'Navnet ditt og PIN-en du valgte.';
+    document.getElementById('p-pin2-boks').hidden = !ny;
+    document.getElementById('p-pin').setAttribute('autocomplete', ny ? 'new-password' : 'current-password');
+    document.getElementById('port-knapp').textContent = ny ? 'Registrer' : 'Logg inn';
+    document.getElementById('port-bytt-tekst').textContent = ny ? 'Har du alt en bruker?' : 'Ny her?';
+    document.getElementById('port-bytt').textContent = ny ? 'Logg inn' : 'Registrer deg';
+    portFeil('');
+  }
+
+  function sendPort() {
+    var navn = document.getElementById('p-navn').value.trim();
+    var pin = document.getElementById('p-pin').value.trim();
+
+    if (!navn) { portFeil('Skriv inn navnet ditt.'); return; }
+    if (!/^\d{4}$/.test(pin)) { portFeil('PIN må være fire siffer.'); return; }
+
+    var jobb;
+    if (portModus === 'ny') {
+      var pin2 = document.getElementById('p-pin2').value.trim();
+      // Skrivefeil i PIN-en her ville låst brukeren ute av sin egen logg.
+      if (pin !== pin2) { portFeil('De to PIN-kodene er ulike.'); return; }
+      jobb = Api.register(navn, pin);
+    } else {
+      jobb = Api.login(navn, pin).then(function (r) {
+        if (!r) throw new Error('Feil navn eller PIN.');
+        return r;
+      });
+    }
+
+    var knapp = document.getElementById('port-knapp');
+    var opprinnelig = knapp.textContent;
+    knapp.disabled = true;
+    knapp.textContent = 'Vent …';
+    portFeil('');
+
+    jobb.then(function () {
+      document.getElementById('p-pin').value = '';
+      document.getElementById('p-pin2').value = '';
+      knapp.disabled = false;
+      knapp.textContent = opprinnelig;
+      visApp();
+    }).catch(function (e) {
+      knapp.disabled = false;
+      knapp.textContent = opprinnelig;
+      portFeil(e.message || 'Kunne ikke logge inn.');
+    });
+  }
+
+  function visPort() {
+    document.getElementById('port').hidden = false;
+    document.getElementById('innhold').hidden = true;
+    document.getElementById('bruker').hidden = true;
+    document.getElementById('antall').textContent = '–';
+    settPortModus('inn');
+    document.getElementById('p-navn').focus();
+  }
+
+  function visApp() {
+    var u = Api.currentUser();
+    document.getElementById('port').hidden = true;
+    document.getElementById('bruker').hidden = false;
+    document.getElementById('bruker-navn').innerHTML = esc(u ? u.name : '');
+
+    var rot = document.getElementById('innhold');
+    rot.hidden = false;
+    rot.className = 'laster';
+    rot.textContent = 'Henter loggen …';
+
+    lastOkter().catch(function (e) {
+      rot.className = 'laster';
+      rot.textContent = e.message || 'Kunne ikke hente loggen.';
+    });
+  }
+
+  function loggUt() {
+    Api.logout();
+    okter = [];
+    utkast = {};
+    visPort();
+  }
+
+  function koblePort() {
+    document.getElementById('port-knapp').addEventListener('click', sendPort);
+    document.getElementById('port-bytt').addEventListener('click', function () {
+      settPortModus(portModus === 'ny' ? 'inn' : 'ny');
+    });
+    document.getElementById('logg-ut').addEventListener('click', loggUt);
+
+    ['p-navn', 'p-pin', 'p-pin2'].forEach(function (id) {
+      document.getElementById(id).addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); sendPort(); }
+      });
+    });
+
+    // PIN-feltene tar bare siffer, uansett hva tastaturet sender inn.
+    ['p-pin', 'p-pin2'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', function (e) {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+      });
+    });
+  }
+
+  function start() {
+    document.getElementById('idag').textContent = datoTekst(new Date().toISOString());
+    koblePort();
+    if (Api.currentUser()) visApp();
+    else visPort();
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>
