@@ -17,9 +17,10 @@ netlify/functions/users.js    registrering, innlogging, admin
 netlify/functions/okter.js    lagring av økter, én blob per økt
 ```
 
-Hver øvelse viser to strekfigurer — start og slutt — sammen med utførelsen og
-den vanligste feilen. Teksten følger styrkeprogrammet: 3 runder, minimal pause
-mellom øvelsene, 60 sekunder mellom rundene.
+Hver øvelse viser to strekfigurer — start og slutt. Utførelsen og den
+vanligste feilen ligger bak «Vis utførelse», så loggeskjermen er kort å
+scrolle mens du trener. Teksten følger styrkeprogrammet: 3 runder, minimal
+pause mellom øvelsene, 60 sekunder mellom rundene.
 
 ## Fokus
 
@@ -27,13 +28,32 @@ Knappen øverst i loggen åpner **fokus**: én øvelse i fullskjerm, med store
 figurer, store tallfelter og ett trykk videre. Laget for telefonen på benken
 mellom settene.
 
-- Åpner på første øvelse som ikke er fylt ut ennå
-- `←`/`→` blar, `Escape` lukker (pilene lar tallfeltene være i fred)
-- Siste øvelse lagrer hele økta og lukker fokus
+Fokus følger programmet som sirkel: **15 steg** — 3 runder gjennom alle fem
+øvelsene. «Neste» går fra siste øvelse i runde 1 rett til første øvelse i
+runde 2. De femten prikkene øverst viser hvor du er, og kan tappes for å
+hoppe.
+
+- Første gang i en økt åpner den på første øvelse som ikke er fylt ut;
+  siden fortsetter den der du slapp
+- Sveip til siden, `←`/`→`, eller knappene. `Escape` lukker
+- Pilene lar tallfeltene være i fred, og sveip som starter i et felt
+  navigerer ikke
+- Siste steg i sirkelen lagrer hele økta og lukker fokus
 - Skjermen holdes våken via Wake Lock, der nettleseren støtter det
+
+Tallfeltene hører til øvelsen, ikke runden: kommer du tilbake til knebøy i
+runde 2, står tallet fra runde 1 der. Bare den tyngste runden loggføres, så
+du retter bare opp hvis runden ble tyngre.
 
 Utkastet er felles med loggskjermen, så tall skrevet i fokus står i lista
 etterpå — og motsatt.
+
+## Tekststørrelse
+
+Fire trinn i mastheaden. Alle `font-size` i stilarket går gjennom
+`calc(Npx * var(--skala))`, og valget settes som `data-skala` på `<html>` og
+huskes i localStorage. Selve velgeren er bevisst holdt utenfor skaleringen —
+ellers flytter knappene seg under fingeren idet du trykker.
 
 ## Én eller to manualer
 
