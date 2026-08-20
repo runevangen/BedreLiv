@@ -15,6 +15,16 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.10",
+    "d": "august 2026",
+    "changes": [
+      "«Skriv ut programmet» gir et rent A4-ark: alle fem øvelsene med figurer, mål, utførelse og den vanligste feilen — pluss et tomt loggskjema med seks rader, så arket kan henges opp og fylles ut for hånd. Det er en egen versjon laget for papir, ikke skjermbildet presset gjennom en skriver: ingen knapper, ingen gjengliste, og øvelser som ikke brekkes midt i over et sideskift.",
+      "«Kopier som tekst» legger hele programmet på utklippstavla som ren tekst, klart til å limes inn i en melding til en venn.",
+      "Begge bygges av den samme øvelseslista som skjermen bruker. Retter vi en formulering ett sted, slår den gjennom alle tre.",
+      "Øvelsene har fått kortnavn. Loggen sa før «Enarms 18×8» og «Rumensk 26×10» — første ord i navnet, som ikke er et brukbart navn på en øvelse. Nå står det «Roing» og «Markløft», og de samme navnene brukes som kolonner i loggskjemaet på utskriften."
+    ]
+  },
+  {
     "v": "0.09",
     "d": "august 2026",
     "changes": [

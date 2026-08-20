@@ -24,6 +24,21 @@ vanligste feilen ligger bak «Vis utførelse», så loggeskjermen er kort å
 scrolle mens du trener. Teksten følger styrkeprogrammet: 3 runder, minimal
 pause mellom øvelsene, 60 sekunder mellom rundene.
 
+## Utskrift og tekst
+
+To lenker under banneret: **Skriv ut programmet** og **Kopier som tekst**.
+
+Utskriften er en egen versjon bygget for papir — `#utskrift` fylles av
+`byggUtskrift()` og vises bare under `@media print`, der resten av siden
+skjules. Den inneholder de fem øvelsene med figurer og et tomt loggskjema med
+seks rader. Øvelsene har `break-inside: avoid`, så ingen deles av et sideskift.
+
+Begge versjonene bygges av den samme `OVELSER`-lista som skjermen. En rettet
+formulering slår gjennom alle tre stedene uten videre arbeid.
+
+Feltet `kort` på hver øvelse er navnet som brukes der plassen er trang: i
+loggen på skjermen og som kolonneoverskrift i loggskjemaet.
+
 ## Fokus
 
 Knappen øverst i loggen åpner **fokus**: én øvelse i fullskjerm, med store
