@@ -11,6 +11,7 @@ database å drifte.
 
 ```
 index.html                    hele appen — innlogging, skjema og logg
+changelog.js                  endringsloggen (ren data, nyeste først)
 figurer.js                    strekfigurer for øvelsene (SVG, ingen bildefiler)
 app-api.js                    klient mot backenden
 netlify/functions/users.js    registrering, innlogging, admin
@@ -47,6 +48,24 @@ du retter bare opp hvis runden ble tyngre.
 
 Utkastet er felles med loggskjermen, så tall skrevet i fokus står i lista
 etterpå — og motsatt.
+
+## Versjon og endringslogg
+
+Versjonsnummeret står rett bak tittelen og åpner loggen. Nummeret leses fra
+toppen av `CHANGELOG`, så det kan ikke komme ut av takt med lista.
+
+Reglene er de samme som i UltimatePizza:
+
+- Nyeste post øverst. Versjon som **streng** (`"0.10"`), ellers blir 0.10 til 0.1
+- Én post per versjon, `d` er måned og år
+- Skriv hva som ble annerledes for den som bruker appen — ikke hvilke filer som
+  ble rørt. Er endringen usynlig, si det rett ut og si hva den var god for
+- Rettede feil hører hjemme i loggen på lik linje med nye ting
+- Blir lista lang: siste måned står i full detalj, eldre måneder kondenseres til
+  én samlepost hver, og detaljene flyttes tapsfritt til `CHANGELOG-ARKIV.md`.
+  Loggen lastes ved hver appstart, så historikken koster noe for hver bruker
+  hver gang. Filformatet er likt UltimatePizza sitt, så `rydd_changelog.py`
+  derfra kan brukes når det blir aktuelt
 
 ## Utvikling
 

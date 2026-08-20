@@ -142,6 +142,92 @@
   }
   .lenke:hover { color: var(--ink); }
 
+  /* Versjonsnummeret sitter i tittelen, men skal ikke rope. */
+  .versjon {
+    border: none;
+    background: none;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    font-size: calc(12px * var(--skala));
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--verdigris);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  .versjon:hover { color: var(--ink); }
+
+  #endringer {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    display: none;
+    flex-direction: column;
+    background: var(--paper);
+    color: var(--ink);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  #endringer.apen { display: flex; }
+  .endr-tittel {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(12.5px * var(--skala));
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dust);
+  }
+  .endr-x {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--etch-sterk);
+    background: var(--plate);
+    color: var(--dust);
+    font-size: calc(15px * var(--skala));
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .endr-topp {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 2px solid var(--ink);
+    margin: 0 0 4px;
+  }
+  .endr-rull {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 0 16px 24px;
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .endr-post { border-top: 1px solid var(--etch); padding: 15px 0 4px; }
+  .endr-post:first-child { border-top: none; }
+  .endr-nr { display: flex; align-items: baseline; gap: 9px; }
+  .endr-nr b {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(21px * var(--skala));
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .endr-nr span { font-size: calc(11.5px * var(--skala)); color: var(--dust); }
+  .endr-post ul { margin: 9px 0 0; padding-left: 17px; }
+  .endr-post li {
+    font-size: calc(13px * var(--skala));
+    line-height: 1.6;
+    color: #4A545B;
+    margin-bottom: 8px;
+  }
+
   .banner {
     background: var(--verdigris-lys);
     border-left: 3px solid var(--verdigris);
@@ -728,7 +814,7 @@
 <div id="app">
   <div class="masthead">
     <p class="kicker">10-minutters manualprogram</p>
-    <h1>Styrkelogg</h1>
+    <h1>Styrkelogg <button type="button" class="versjon" id="versjon" title="Se hva som er nytt" hidden></button></h1>
     <div class="meta">
       <span>Økter loggført: <strong id="antall">–</strong></span>
       <span id="idag">–</span>
@@ -781,6 +867,15 @@
   <div id="fokus-body"></div>
 </div>
 
+<div id="endringer" aria-hidden="true">
+  <div class="endr-topp">
+    <span class="endr-tittel">Hva som er nytt</span>
+    <button class="endr-x" id="endr-lukk" aria-label="Lukk endringsloggen">✕</button>
+  </div>
+  <div class="endr-rull" id="endr-body"></div>
+</div>
+
+<script src="changelog.js"></script>
 <script src="app-api.js"></script>
 <script src="figurer.js"></script>
 <script>
@@ -1228,6 +1323,42 @@
     });
   }
 
+  // ===== Versjon og endringslogg =====
+  // Nummeret leses fra toppen av CHANGELOG, så det kan aldri komme ut av takt
+  // med loggen. Mangler changelog.js, skjules merket i stedet for å vise «?».
+  function visVersjon() {
+    var el = document.getElementById('versjon');
+    if (typeof CHANGELOG === 'undefined' || !CHANGELOG.length) return;
+    el.textContent = 'v' + CHANGELOG[0].v;
+    el.hidden = false;
+    el.addEventListener('click', apneEndringer);
+    document.getElementById('endr-lukk').addEventListener('click', lukkEndringer);
+  }
+
+  function apneEndringer() {
+    var h = CHANGELOG.map(function (post) {
+      return '<div class="endr-post">' +
+        '<div class="endr-nr"><b>v' + post.v + '</b><span>' + post.d + '</span></div>' +
+        '<ul>' + post.changes.map(function (c) { return '<li>' + c + '</li>'; }).join('') + '</ul>' +
+        '</div>';
+    }).join('');
+    document.getElementById('endr-body').innerHTML = h;
+    document.getElementById('endringer').classList.add('apen');
+    document.getElementById('endringer').setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function lukkEndringer() {
+    document.getElementById('endringer').classList.remove('apen');
+    document.getElementById('endringer').setAttribute('aria-hidden', 'true');
+    // Fokus kan ligge åpent bak; da skal rullesperren bli stående.
+    if (!fokusErApen()) document.body.style.overflow = '';
+  }
+
+  function endringerErApne() {
+    return document.getElementById('endringer').classList.contains('apen');
+  }
+
   // ===== Tekststørrelse =====
   // Settes som data-skala på <html>, som all font-size regner ut fra. Valget
   // huskes lokalt — det er en egenskap ved telefonen din, ikke ved kontoen.
@@ -1587,6 +1718,7 @@
 
   function start() {
     document.getElementById('idag').textContent = datoTekst(new Date().toISOString());
+    visVersjon();
     kobleTekstStorrelse();
     kobleSveip();
     koblePort();
@@ -1594,6 +1726,10 @@
     // Piltaster og Escape i fokus. Står markøren i et tallfelt, skal pilene
     // flytte markøren som vanlig — ikke bla til neste øvelse.
     document.addEventListener('keydown', function (e) {
+      if (endringerErApne()) {
+        if (e.key === 'Escape') lukkEndringer();
+        return;
+      }
       if (!fokusErApen()) return;
       if (e.key === 'Escape') { lukkFokus(); return; }
       if (e.target && e.target.tagName === 'INPUT') return;
