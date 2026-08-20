@@ -48,6 +48,29 @@ du retter bare opp hvis runden ble tyngre.
 Utkastet er felles med loggskjermen, så tall skrevet i fokus står i lista
 etterpå — og motsatt.
 
+## Utvikling
+
+Under øvelsene ligger en utviklingsdel: per øvelse en sparkline over de siste
+seks øktene, og et ord for retningen — **oppover**, **som før** eller
+**lettere**.
+
+Trenden regnes på volum (vekt × reps), ikke vekt alene, siden én repetisjon
+mer er reell framgang selv med samme manual. Stigningstallet finnes med minste
+kvadraters metode og deles på snittvolumet, så en tung øvelse ikke automatisk
+får brattere «trend» enn en lett. Terskelen er ±2 % per økt; innenfor det
+heter det «som før».
+
+Sparkline-domenet har en minstebredde på 10 % av snittet. Uten den ville en
+vingling på én prosent blitt tegnet som en bratt bakke, mens ordet ved siden
+av sa «som før».
+
+### Om tonen
+
+«Lettere» er ikke en feil, og er ikke farget som en. Advarselsrødt er
+reservert for «Unngå»-linjene; retningen ned bruker en rolig oker. Delen har
+en fast linje om at det finnes mange grunner til å løfte mindre en dag.
+Retningen sies alltid med både symbol og ord, aldri farge alene.
+
 ## Tekststørrelse
 
 Fire trinn i mastheaden. Alle `font-size` i stilarket går gjennom

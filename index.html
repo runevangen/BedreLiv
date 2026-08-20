@@ -22,6 +22,11 @@
     --verdigris: #1E7D6B;
     --verdigris-lys: #E8F3F0;
     --rust: #A8452F;
+    /* «Lettere enn før» er ikke en advarsel, og skal ikke ha samme farge som
+       «Unngå». Rolig oker i stedet for alarmrødt. Begge klarer WCAG AA på
+       papirbakgrunnen (5,3:1). */
+    --oker: #8A5A2B;
+    --dust-sterk: #5C666D;
   }
 
   html[data-skala="liten"]  { --skala: 0.92; }
@@ -292,7 +297,7 @@
   }
   .opp { color: var(--verdigris); }
   .likt { color: var(--dust); }
-  .ned { color: var(--rust); }
+  .ned { color: var(--oker); }
 
   .lagre {
     width: 100%;
@@ -332,6 +337,86 @@
     margin: 30px 0 12px;
     font-weight: 600;
   }
+
+  /* ===== Utvikling ===== */
+  .utv-topp {
+    background: var(--plate);
+    border: 1px solid var(--etch);
+    border-left: 3px solid var(--verdigris);
+    border-radius: 3px;
+    padding: 12px 13px;
+    margin-bottom: 12px;
+  }
+  .utv-overskrift {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    margin: 0;
+  }
+  .utv-sum { font-size: 12.5px; line-height: 1.5; color: var(--dust-sterk); margin: 5px 0 0; }
+  .utv-trost {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--dust);
+    margin: 9px 0 0;
+    padding-top: 9px;
+    border-top: 1px solid var(--etch);
+  }
+
+  .utv-rad {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--etch);
+  }
+  .utv-navn { flex: 1; min-width: 0; }
+  .utv-navn b {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .utv-navn span {
+    display: block;
+    font-size: 11.5px;
+    color: var(--dust);
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Sparkline: linja er tilbaketrukket, siste økt bærer fargen. */
+  .spark { width: 72px; height: 26px; flex: none; }
+  .spark-linje {
+    fill: none;
+    stroke: var(--etch-sterk);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .spark-na { fill: var(--dust-sterk); }
+  .spark-na.opp { fill: var(--verdigris); }
+  .spark-na.lettere { fill: var(--oker); }
+
+  .utv-dom {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex: none;
+    text-align: right;
+    min-width: 74px;
+    color: var(--dust-sterk);
+  }
+  .utv-dom.opp { color: var(--verdigris); }
+  .utv-dom.lettere { color: var(--oker); }
 
   .okt {
     border-bottom: 1px solid var(--etch);
@@ -843,6 +928,8 @@
     h += '<button class="lagre" id="lagre"' + (harUtkast() ? '' : ' disabled') + '>Lagre økta</button>';
     h += '<p class="kvittering" id="kvittering"></p>';
 
+    h += utviklingBlokk();
+
     h += '<h2 class="seksjon">Loggen</h2>';
     if (!okter.length) {
       h += '<p class="tomt">Ingen økter ennå. Første økt setter utgangspunktet — det er den eneste som ikke kan slås.</p>';
@@ -936,6 +1023,142 @@
   function oppdaterAntall() {
     var a = document.getElementById('antall');
     if (a) a.textContent = okter.length;
+  }
+
+  // ===== Utvikling over tid =====
+  // Trenden regnes på volum (vekt × reps) per øvelse. Volum framfor vekt alene,
+  // fordi én rep mer er reell framgang selv om manualen er den samme.
+  var TREND_OKTER = 6;
+
+  function volumSerie(id) {
+    var ut = [];
+    okter.forEach(function (o) {
+      var e = o.ovelser[id];
+      if (e && e.vekt && e.reps) {
+        ut.push({ volum: e.vekt * e.reps, vekt: e.vekt, reps: e.reps });
+      }
+    });
+    return ut;
+  }
+
+  // Minste kvadraters stigningstall over de siste øktene, delt på snittvolumet.
+  // Normaliseringen gjør at en tung øvelse ikke automatisk får en brattere
+  // «trend» enn en lett — det er den relative endringen som betyr noe.
+  function trend(serie) {
+    if (serie.length < 2) return null;
+    var v = serie.slice(-TREND_OKTER);
+    var n = v.length;
+    var snittX = (n - 1) / 2;
+    var snittY = 0;
+    for (var i = 0; i < n; i++) snittY += v[i].volum;
+    snittY /= n;
+    if (!snittY) return null;
+
+    var teller = 0, nevner = 0;
+    for (i = 0; i < n; i++) {
+      teller += (i - snittX) * (v[i].volum - snittY);
+      nevner += (i - snittX) * (i - snittX);
+    }
+    if (!nevner) return null;
+
+    var pst = (teller / nevner) / snittY;   // endring per økt, som andel av snittet
+    return {
+      pst: pst,
+      retning: pst > 0.02 ? 'opp' : pst < -0.02 ? 'lettere' : 'likt',
+      serie: v
+    };
+  }
+
+  // Sparkline: linja i tilbaketrukket grått, siste økt som farget punkt.
+  // Fargen er aldri eneste kanal — ordet og pila ved siden av sier det samme.
+  function sparkline(v, retning) {
+    var B = 72, H = 26, pad = 5;
+    var lav = v[0].volum, hoy = v[0].volum, sum = 0;
+    v.forEach(function (p) {
+      if (p.volum < lav) lav = p.volum;
+      if (p.volum > hoy) hoy = p.volum;
+      sum += p.volum;
+    });
+
+    // Skalerer vi rett til min–maks, blir en vingling på én prosent tegnet som
+    // en bratt bakke — mens ordet ved siden av sier «Som før». Domenet får
+    // derfor en minstebredde på ti prosent av snittet, så små svingninger
+    // ligger nesten flatt og bare reell endring fyller ruta.
+    var snitt = sum / v.length;
+    var domene = Math.max(hoy - lav, snitt * 0.1);
+    var midt = (hoy + lav) / 2;
+    var bunn = midt - domene / 2;
+    var steg = v.length > 1 ? (B - pad * 2) / (v.length - 1) : 0;
+
+    var pkt = v.map(function (p, i) {
+      var x = pad + i * steg;
+      var y = domene ? H - pad - ((p.volum - bunn) / domene) * (H - pad * 2) : H / 2;
+      return [Math.round(x * 10) / 10, Math.round(y * 10) / 10];
+    });
+
+    var linje = pkt.map(function (q) { return q[0] + ',' + q[1]; }).join(' ');
+    var na = pkt[pkt.length - 1];
+    return '<svg class="spark" viewBox="0 0 ' + B + ' ' + H + '" aria-hidden="true">' +
+      '<polyline class="spark-linje" points="' + linje + '"/>' +
+      '<circle class="spark-na ' + retning + '" cx="' + na[0] + '" cy="' + na[1] + '" r="4"/>' +
+      '</svg>';
+  }
+
+  function trendMerke(retning) {
+    if (retning === 'opp') return '▲ Oppover';
+    if (retning === 'lettere') return '▼ Lettere';
+    return '= Som før';
+  }
+
+  function utviklingBlokk() {
+    var h = '<h2 class="seksjon">Utvikling</h2>';
+
+    if (okter.length < 2) {
+      return h + '<p class="tomt">' + (okter.length
+        ? 'Én økt loggført. Etter et par til kan vi vise hvilken vei det går.'
+        : 'Ingen økter ennå — utviklingen dukker opp når du har logget et par.') + '</p>';
+    }
+
+    var rader = '';
+    var tell = { opp: 0, likt: 0, lettere: 0 };
+    OVELSER.forEach(function (ov) {
+      var serie = volumSerie(ov.id);
+      var t = trend(serie);
+      if (!t) return;
+      tell[t.retning]++;
+      var sist = serie[serie.length - 1];
+      rader += '<div class="utv-rad">' +
+        '<div class="utv-navn"><b>' + ov.navn + '</b>' +
+        '<span>Sist: ' + sist.vekt + ' kg × ' + sist.reps + '</span></div>' +
+        sparkline(t.serie, t.retning) +
+        '<span class="utv-dom ' + t.retning + '">' + trendMerke(t.retning) + '</span>' +
+        '</div>';
+    });
+
+    if (!rader) {
+      return h + '<p class="tomt">Ingen av øvelsene er loggført to ganger ennå. Da har vi ikke noe å sammenlikne.</p>';
+    }
+
+    var overskrift = tell.opp > tell.lettere ? 'Det går oppover'
+      : tell.lettere > tell.opp ? 'Litt lettere om dagen'
+      : 'Du holder nivået';
+
+    var deler = [];
+    if (tell.opp) deler.push(tell.opp + (tell.opp === 1 ? ' øvelse går' : ' øvelser går') + ' oppover');
+    if (tell.likt) deler.push(tell.likt + ' ligger stabilt');
+    if (tell.lettere) deler.push(tell.lettere + (tell.lettere === 1 ? ' er lettere' : ' er lettere') + ' enn før');
+    var sum = deler.length > 1
+      ? deler.slice(0, -1).join(', ') + ' og ' + deler[deler.length - 1]
+      : deler[0];
+
+    return h +
+      '<div class="utv-topp">' +
+        '<p class="utv-overskrift">' + overskrift + '</p>' +
+        '<p class="utv-sum">' + sum + ', regnet over de siste øktene.</p>' +
+        '<p class="utv-trost">Å løfte mindre er ikke et tilbakesteg. Dårlig søvn, en travel dag, ' +
+        'eller noe annet du gjorde med kroppen i går — alt teller inn. Loggen er et minne om hva ' +
+        'du faktisk gjorde, ikke en dom over det.</p>' +
+      '</div>' + rader;
   }
 
   // ===== Lagring mot backend =====
