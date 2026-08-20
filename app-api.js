@@ -107,6 +107,16 @@ var Api = (function () {
     });
   }
 
+  // Heia på en venns økt. Trykker du igjen, tas heiaropet bort — samme kall.
+  // Serveren svarer med hele lista, så klienten slipper å gjette utfallet.
+  function heiarop(oktId) {
+    return call('/api/okter/' + encodeURIComponent(oktId) + '/heiarop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUserId(), navn: currentUserName() })
+    });
+  }
+
   function deleteOkt(id) {
     var uid = currentUserId();
     return call(
@@ -125,6 +135,7 @@ var Api = (function () {
     login: login,
     listOkter: listOkter,
     saveOkt: saveOkt,
+    heiarop: heiarop,
     deleteOkt: deleteOkt
   };
 })();

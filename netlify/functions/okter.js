@@ -8,6 +8,11 @@ import { getStore } from '@netlify/blobs';
 // POST   /api/okter                  -> ny økt { ownerId, dato, ovelser, savedBy?, shared? }
 // PATCH  /api/okter/:id              -> rett opp en økt { userId, ovelser?, dato?, shared? }
 // DELETE /api/okter/:id?userId=X     -> slett (kun eier eller admin)
+// POST   /api/okter/:id/heiarop      -> heia på / ta bort heiarop { userId, navn }
+//
+// Heiarop har sin EGEN rute, i stedet for å gå gjennom PATCH. PATCH er
+// forbeholdt eieren, og det vernet skal stå: en venn skal kunne heie, men
+// ikke kunne rette på tallene dine. Denne ruta rører bare heiarop-lista.
 //
 // Admin-passord settes som miljøvariabelen ADMIN_PASSWORD i Netlify. Er den
 // ikke satt, er admin-tilgangen avslått.
@@ -19,6 +24,10 @@ const STORE_OKTER = 'bedreliv-okter';
 // vern mot at en rusk-klient sender inn noe absurd.
 const MAKS_OVELSER = 40;
 
+// Tak på heiarop per økt. Vennegjengen er liten; taket er bare et vern mot at
+// en rusk-klient fyller en post med tusenvis av oppføringer.
+const MAKS_HEIAROP = 100;
+
 function json(status, body) {
   return new Response(JSON.stringify(body), {
     status,
@@ -29,6 +38,12 @@ function json(status, body) {
 function idFromPath(path) {
   const parts = path.split('/').filter(Boolean);
   return parts[parts.length - 1];
+}
+
+// /api/okter/:id/heiarop — id-en er nest sist, ikke sist.
+function idFraHeiaropSti(path) {
+  const parts = path.split('/').filter(Boolean);
+  return parts[parts.length - 2];
 }
 
 function isAdminPw(pw) {
@@ -78,6 +93,7 @@ export default async (req) => {
   const store = getStore(STORE_OKTER);
   const url = new URL(req.url);
   const isCollection = url.pathname.endsWith('/okter') || url.pathname.endsWith('/okter/');
+  const isHeiarop = url.pathname.endsWith('/heiarop');
 
   try {
     if (req.method === 'GET') {
@@ -102,6 +118,37 @@ export default async (req) => {
       return json(200, { okter });
     }
 
+    // ===== Heiarop =====
+    if (req.method === 'POST' && isHeiarop) {
+      const id = idFraHeiaropSti(url.pathname);
+      if (!id) return json(400, { error: 'Mangler id' });
+      const body = await req.json();
+      const userId = cleanStr(body.userId, 64);
+      if (!userId) return json(400, { error: 'Mangler userId' });
+
+      const okt = await store.get(id, { type: 'json' });
+      if (!okt) return json(404, { error: 'Fant ikke økta' });
+      if (okt.ownerId && okt.ownerId === userId) {
+        return json(403, { error: 'Du kan ikke heie på din egen økt' });
+      }
+
+      const liste = Array.isArray(okt.heiarop) ? okt.heiarop : [];
+      const finnes = liste.findIndex((h) => h && h.id === userId);
+      if (finnes >= 0) {
+        liste.splice(finnes, 1);   // trykk igjen = ta bort heiaropet
+      } else {
+        if (liste.length >= MAKS_HEIAROP) return json(400, { error: 'For mange heiarop' });
+        liste.push({
+          id: userId,
+          navn: cleanStr(body.navn, 40) || 'Noen',
+          naar: new Date().toISOString()
+        });
+      }
+      okt.heiarop = liste;
+      await store.setJSON(id, okt);
+      return json(200, { heiarop: liste });
+    }
+
     if (req.method === 'POST' && isCollection) {
       const body = await req.json();
       const ovelser = cleanOvelser(body.ovelser);
@@ -114,6 +161,7 @@ export default async (req) => {
         shared: body.shared === true,
         dato: cleanDato(body.dato) || new Date().toISOString(),
         ovelser,
+        heiarop: [],
         savedAt: new Date().toISOString()
       };
       await store.setJSON(id, okt);
@@ -166,4 +214,4 @@ export default async (req) => {
   }
 };
 
-export const config = { path: ['/api/okter', '/api/okter/:id'] };
+export const config = { path: ['/api/okter', '/api/okter/:id', '/api/okter/:id/heiarop'] };

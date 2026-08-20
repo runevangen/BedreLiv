@@ -579,6 +579,34 @@
     margin-left: 1px;
   }
 
+  .gj-heia {
+    flex: none;
+    border: 1px solid var(--etch-sterk);
+    background: var(--plate);
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-size: calc(13px * var(--skala));
+    line-height: 1.3;
+    cursor: pointer;
+  }
+  .gj-heia span {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(12px * var(--skala));
+    font-weight: 700;
+    color: var(--dust-sterk);
+    margin-left: 2px;
+  }
+  .gj-heia.mitt { border-color: var(--verdigris); background: var(--verdigris-lys); }
+  .gj-heia.mitt span { color: var(--verdigris); }
+  .gj-heia:disabled { opacity: 0.5; cursor: default; }
+
+  .gj-heiere {
+    font-size: calc(11.5px * var(--skala));
+    line-height: 1.5;
+    color: var(--verdigris);
+    margin: 3px 0 0;
+  }
+
   .gj-x {
     flex: none;
     border: none;
@@ -1479,6 +1507,7 @@
         iUka: dater.filter(function (d) { return ukeNokkel(d) === naa; }).length,
         rad: ukerPaaRad(dater),
         sist: dater.length ? dater[dater.length - 1] : null,
+        sisteOkt: p.okter.length ? p.okter[p.okter.length - 1] : null,
         retning: personRetning(p.okter)
       };
     }).sort(function (a, b) {
@@ -1586,11 +1615,13 @@
         '<div class="gj-hode">' +
           '<b>' + esc(p.navn) + (p.erMeg ? ' <em>(deg)</em>' : '') + '</b>' +
           ukePrikker(p.iUka) +
+          heiaropKnapp(p) +
           (p.erMeg ? '' : '<button type="button" class="gj-x" data-skjul="' + p.id +
             '" aria-label="Skjul ' + esc(p.navn) + ' fra min visning">✕</button>') +
         '</div>' +
         '<p class="gj-under"><span class="gj-dom ' + klasse + '">' + ord + '</span> · ' +
         biter.join(' · ') + '</p>' +
+        heiaropLinje(p) +
         '</div>';
     }).join('');
 
@@ -1604,6 +1635,37 @@
     }
 
     return h + loftHtml + rader + skjultHtml + inviterKnapp();
+  }
+
+  // Heiaropet henger på personens SISTE økt — det er den man heier på når man
+  // ser at noen har trent. Trykk igjen tar det bort.
+  function heiaropListe(p) {
+    return (p.sisteOkt && Array.isArray(p.sisteOkt.heiarop)) ? p.sisteOkt.heiarop : [];
+  }
+
+  function heiaropKnapp(p) {
+    // Du kan ikke heie på deg selv — men du ser hvem som heier på deg.
+    if (p.erMeg || !p.sisteOkt) return '';
+    var liste = heiaropListe(p);
+    var meg = Api.currentUserId();
+    var mitt = liste.some(function (h) { return h && h.id === meg; });
+    return '<button type="button" class="gj-heia' + (mitt ? ' mitt' : '') + '"' +
+      ' data-heia="' + p.sisteOkt.id + '"' +
+      ' aria-label="' + (mitt ? 'Ta bort heiaropet ditt til ' : 'Hei på ') + esc(p.navn) + '">' +
+      '👏' + (liste.length ? ' <span>' + liste.length + '</span>' : '') + '</button>';
+  }
+
+  function heiaropLinje(p) {
+    var liste = heiaropListe(p);
+    if (!liste.length) return '';
+    var meg = Api.currentUserId();
+    var navn = liste.map(function (h) { return h.id === meg ? 'Du' : (h.navn || 'Noen'); });
+    // «Du» først når du er med — det er slik man leser en slik setning.
+    navn.sort(function (a, b) { return a === 'Du' ? -1 : b === 'Du' ? 1 : 0; });
+    var tekst = navn.length === 1 ? navn[0]
+      : navn.slice(0, -1).join(', ') + ' og ' + navn[navn.length - 1];
+    var verb = (navn.length === 1 && navn[0] === 'Du') ? 'heier' : 'heier';
+    return '<p class="gj-heiere">' + esc(tekst) + ' ' + verb + ' på siste økt</p>';
   }
 
   function inviterKnapp() {
@@ -1635,8 +1697,28 @@
       });
     });
 
+    vert.querySelectorAll('[data-heia]').forEach(function (k) {
+      k.addEventListener('click', function () { heiPaa(k, k.getAttribute('data-heia')); });
+    });
+
     var inv = document.getElementById('inviter');
     if (inv) inv.addEventListener('click', inviter);
+  }
+
+  function heiPaa(knapp, oktId) {
+    knapp.disabled = true;
+    Api.heiarop(oktId).then(function (svar) {
+      // Oppdater økta vi alt har i minnet, så skjermen kan tegnes uten å
+      // hente hele lista på nytt.
+      for (var i = 0; i < alleOkter.length; i++) {
+        if (alleOkter[i].id === oktId) { alleOkter[i].heiarop = svar.heiarop; break; }
+      }
+      tegn();
+    }).catch(function (e) {
+      knapp.disabled = false;
+      var kvitt = document.getElementById('invitert');
+      if (kvitt) kvitt.textContent = e.message || 'Kunne ikke heie akkurat nå.';
+    });
   }
 
   function inviter() {

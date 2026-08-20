@@ -15,6 +15,15 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.08",
+    "d": "august 2026",
+    "changes": [
+      "Heiarop. Trykk 👏 på en venn i gjengen for å heie på siste økta deres. Trykk igjen tar det bort. Under raden står det hvem som heier — «Du og Kari heier på siste økt» — og du ser selv hvem som har heiet på deg.",
+      "Du kan ikke heie på deg selv. Det er ikke et teknisk hinder, det er hele poenget: heiarop er noe som kommer fra andre.",
+      "Under panseret fikk heiarop sin egen rute framfor å gå gjennom den vanlige oppdateringen av en økt. Å endre en økt er forbeholdt eieren, og det vernet skulle stå: en venn skal kunne heie, men ikke kunne rette på tallene dine. Ruta rører bare heiarop-lista, ingenting annet — og heiaropene overlever at eieren retter opp økta etterpå."
+    ]
+  },
+  {
     "v": "0.07",
     "d": "august 2026",
     "changes": [

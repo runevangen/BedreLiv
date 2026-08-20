@@ -85,6 +85,16 @@ sist trent. Sortert på aktivitet denne uka, aldri på vekt.
 egen forrige økt i samme øvelse. Relativt framfor absolutt: ellers vinner den
 tyngste hver uke.
 
+### Heiarop
+
+👏 på en venns siste økt, med samme kall for å ta det bort igjen. Heiarop har
+sin **egen rute** framfor å gå gjennom `PATCH`: å endre en økt er forbeholdt
+eieren, og det vernet skal stå. En venn skal kunne heie, men ikke rette på
+tallene dine. Ruta rører bare `heiarop`-lista.
+
+Du kan ikke heie på din egen økt — serveren svarer 403. Det er ikke et teknisk
+hinder, men poenget med mekanismen.
+
 ### Hva du styrer, og hva du ikke styrer
 
 Du kan ikke skru av at du er synlig for de andre — det er premisset. Men din
@@ -164,6 +174,7 @@ Navn er unike og sammenliknes uten hensyn til store og små bokstaver, så
 | POST | `/api/okter` | ny økt `{ ownerId, dato, ovelser, savedBy? }` |
 | PATCH | `/api/okter/:id` | rett opp en økt `{ userId, ovelser?, dato? }` |
 | DELETE | `/api/okter/:id?userId=X` | slett (kun eier) |
+| POST | `/api/okter/:id/heiarop` | heia på / ta bort heiarop `{ userId, navn }` |
 
 En økt ser slik ut:
 
