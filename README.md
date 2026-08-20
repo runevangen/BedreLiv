@@ -12,6 +12,7 @@ database å drifte.
 ```
 index.html                    hele appen — innlogging, skjema og logg
 changelog.js                  endringsloggen (ren data, nyeste først)
+BACKLOG.md                    åpne punkter og avgjørelser som venter
 figurer.js                    strekfigurer for øvelsene (SVG, ingen bildefiler)
 app-api.js                    klient mot backenden
 netlify/functions/users.js    registrering, innlogging, admin
