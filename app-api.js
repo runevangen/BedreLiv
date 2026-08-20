@@ -84,6 +84,13 @@ var Api = (function () {
     });
   }
 
+  // Alle registrerte, så gjengen kan vise folk før de har trent.
+  function listBrukere() {
+    var uid = currentUserId();
+    return call('/api/users/gjengen' + (uid ? '?userId=' + encodeURIComponent(uid) : ''))
+      .then(function (r) { return r.brukere || []; });
+  }
+
   // ===== Økter =====
   // Serveren sorterer eldst først, som er rekkefølgen front-end regner
   // «forrige økt» ut fra.
@@ -133,6 +140,7 @@ var Api = (function () {
     nameExists: nameExists,
     register: register,
     login: login,
+    listBrukere: listBrukere,
     listOkter: listOkter,
     saveOkt: saveOkt,
     heiarop: heiarop,

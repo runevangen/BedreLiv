@@ -1071,6 +1071,7 @@
 
   var okter = [];       // mine egne, eldst først
   var alleOkter = [];   // hele gjengen sine, eldst først
+  var brukere = [];     // alle registrerte, også de som ikke har trent ennå
   var utkast = {};
   var portModus = 'inn'; // 'inn' | 'ny'
 
@@ -1482,10 +1483,15 @@
 
   function grupperPerPerson() {
     var pers = {};
+    // Alle registrerte er med fra dag én, også før første økt. Navnet fra
+    // registeret er fasit; savedBy brukes bare for folk vi ikke fant der.
+    brukere.forEach(function (b) {
+      if (b && b.id) pers[b.id] = { id: b.id, navn: b.navn || 'Ukjent', registrert: true, okter: [] };
+    });
     alleOkter.forEach(function (o) {
       var id = o.ownerId || 'ukjent';
-      if (!pers[id]) pers[id] = { id: id, navn: o.savedBy || 'Ukjent', okter: [] };
-      if (o.savedBy) pers[id].navn = o.savedBy;   // nyeste navn vinner
+      if (!pers[id]) pers[id] = { id: id, navn: o.savedBy || 'Ukjent', registrert: false, okter: [] };
+      if (!pers[id].registrert && o.savedBy) pers[id].navn = o.savedBy;
       pers[id].okter.push(o);
     });
     return pers;
@@ -1585,7 +1591,12 @@
     }
 
     var alle = gjengData();
-    if (alle.length < 2) {
+    // Spørsmålet er om det finnes NOEN ANDRE enn meg, ikke hvor mange rader
+    // lista har. Teller man rader, forsvinner en venn i det øyeblikket jeg
+    // selv mangler fra lista — og meldingen påstår «bare deg her» om en liste
+    // som inneholder vennen og ikke meg.
+    var andre = alle.filter(function (p) { return !p.erMeg; });
+    if (!andre.length) {
       return h + '<p class="tomt">Foreløpig er det bare deg her. Inviter noen, så blir det gøyere.</p>' +
         inviterKnapp();
     }
@@ -1604,12 +1615,18 @@
         '<p class="gj-loft-tall">Ingen har slått seg selv denne uka ennå. Det er fortsatt tid.</p></div>';
 
     var rader = vist.map(function (p) {
-      var ord = p.retning ? trendMerke(p.retning) : 'For få økter';
+      var ord = p.antall === 0 ? 'Ikke i gang ennå'
+        : p.retning ? trendMerke(p.retning) : 'For få økter';
       var klasse = p.retning || '';
       var biter = [];
-      if (p.rad) biter.push(p.rad + (p.rad === 1 ? ' uke på rad' : ' uker på rad'));
-      biter.push(sidenTekst(p.sist));
-      biter.push(p.antall + (p.antall === 1 ? ' økt totalt' : ' økter totalt'));
+      if (p.antall === 0) {
+        // «0 økter totalt · ingen økter ennå» sier det samme to ganger.
+        biter.push(p.erMeg ? 'du har ikke loggført noe ennå' : 'har ikke loggført noe ennå');
+      } else {
+        if (p.rad) biter.push(p.rad + (p.rad === 1 ? ' uke på rad' : ' uker på rad'));
+        biter.push(sidenTekst(p.sist));
+        biter.push(p.antall + (p.antall === 1 ? ' økt totalt' : ' økter totalt'));
+      }
 
       return '<div class="gj-rad">' +
         '<div class="gj-hode">' +
@@ -1806,13 +1823,20 @@
   }
 
   function lastOkter() {
-    return Api.listOkter().then(function (liste) {
+    return Promise.all([
+      Api.listOkter(),
+      // Brukerlista er det som gjør at nyregistrerte vises i gjengen før de har
+      // trent. Svikter den, faller vi tilbake på dem som har økter — bedre en
+      // mager gjengliste enn en tom skjerm.
+      Api.listBrukere().catch(function () { return []; })
+    ]).then(function (svar) {
       // Serveren gir hele gjengen. «Forrige økt», loggen og din egen utvikling
       // skal bare regne på dine egne — ellers ville du blitt sammenliknet med
       // en venn uten å vite det.
-      alleOkter = liste;
+      alleOkter = svar[0];
+      brukere = svar[1];
       var uid = Api.currentUserId();
-      okter = liste.filter(function (o) { return o.ownerId === uid; });
+      okter = alleOkter.filter(function (o) { return o.ownerId === uid; });
       tegn();
       oppdaterAntall();
     });
@@ -2187,6 +2211,7 @@
     Api.logout();
     okter = [];
     alleOkter = [];
+    brukere = [];
     utkast = {};
     visPort();
   }

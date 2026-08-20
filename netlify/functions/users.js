@@ -6,6 +6,11 @@ import crypto from 'node:crypto';
 // Ingen sensitive data — PIN er en lett sperre, ikke ekte sikkerhet.
 //
 // GET    /api/users?name=X            -> { exists: true|false }
+// GET    /api/users/gjengen?userId=X  -> { brukere: [{id, navn}] } — alle registrerte
+//
+// Gjengen-lista gir navn og id, aldri PIN-hashen. Den finnes fordi appen ellers
+// bare kjenner dem som har loggført en økt: en nyregistrert venn ville vært
+// usynlig for de andre til han trente første gang.
 // POST   /api/users                   -> registrer ny bruker { name, pin } -> { id, name }
 // POST   /api/users/verify            -> logg inn { name, pin } -> { ok:true, id, name } | { ok:false }
 // GET    /api/users/admin?password=X  -> (admin) alle brukere, uten PIN-hash
@@ -63,6 +68,7 @@ export default async (req) => {
   const pathParts = url.pathname.split('/').filter(Boolean);
   const isAdminPath = pathParts.includes('admin');
   const isVerifyPath = pathParts.includes('verify');
+  const isGjengPath = pathParts.includes('gjengen');
 
   try {
     // ===== ADMIN: liste alle brukere =====
@@ -107,6 +113,27 @@ export default async (req) => {
       if (!key) return json(404, { error: 'Fant ikke bruker' });
       await store.delete(key);
       return json(200, { deleted: id });
+    }
+
+    // ===== Gjengen: navn og id for alle registrerte =====
+    if (req.method === 'GET' && isGjengPath) {
+      const userId = url.searchParams.get('userId');
+      if (!userId) return json(400, { error: 'Mangler userId' });
+      const { blobs } = await store.list();
+      // Isoler hver post: én uleselig blob skal ikke velte hele lista.
+      const raw = await Promise.all(blobs.map(async (b) => {
+        try {
+          return await store.get(b.key, { type: 'json' });
+        } catch (err) {
+          console.error('Kunne ikke lese bruker', b.key, err && err.message);
+          return null;
+        }
+      }));
+      const brukere = raw
+        .filter((u) => u && u.id)
+        .map((u) => ({ id: u.id, navn: u.displayName }));
+      brukere.sort((a, b) => String(a.navn || '').localeCompare(String(b.navn || ''), 'nb'));
+      return json(200, { brukere });
     }
 
     // ===== Finnes navnet fra før? =====
@@ -157,5 +184,11 @@ export default async (req) => {
 };
 
 export const config = {
-  path: ['/api/users', '/api/users/verify', '/api/users/admin', '/api/users/admin/:id']
+  path: [
+    '/api/users',
+    '/api/users/verify',
+    '/api/users/gjengen',
+    '/api/users/admin',
+    '/api/users/admin/:id'
+  ]
 };

@@ -15,6 +15,15 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.09",
+    "d": "august 2026",
+    "changes": [
+      "Alle i gjengen er synlige fra dagen de registrerer seg, ikke først når de har loggført sin første økt. Før ble gjenglista bygget av øktene, så en nyregistrert venn var usynlig for de andre — og du var usynlig for ham — helt til noen hadde trent. Nå står de der med «Ikke i gang ennå».",
+      "Rettet en feil i den samme delen: vakta som avgjorde om gjengen skulle vises telte antall personer i lista, i stedet for å spørre om det finnes noen andre enn deg. Manglet du selv fra lista, forsvant vennen din også — og appen påsto «Foreløpig er det bare deg her» om en liste som inneholdt vennen og ikke deg.",
+      "Under panseret: et nytt, lite endepunkt gir navn og id for alle registrerte. PIN-hashen forlater aldri serveren. Svikter kallet, faller gjengen tilbake på dem som har økter — bedre en mager liste enn en tom skjerm."
+    ]
+  },
+  {
     "v": "0.08",
     "d": "august 2026",
     "changes": [

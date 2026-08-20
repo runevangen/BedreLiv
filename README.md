@@ -82,6 +82,12 @@ skillet ville du blitt sammenliknet med en venn uten å vite det.
 Gjengdelen viser per person: ruter for ukas to økter, uker på rad, retning og
 sist trent. Sortert på aktivitet denne uka, aldri på vekt.
 
+Lista bygges fra **brukerregisteret**, ikke fra øktene, så alle er synlige fra
+dagen de registrerer seg. Bygde man den av øktene, ville en nyregistrert venn
+vært usynlig til han trente første gang. `GET /api/users/gjengen` gir navn og
+id — aldri PIN-hashen. Svikter kallet, faller gjengen tilbake på dem som har
+økter.
+
 **Ukas løft** er den største relative framgangen denne uka, målt mot personens
 egen forrige økt i samme øvelse. Relativt framfor absolutt: ellers vinner den
 tyngste hver uke.
@@ -160,6 +166,7 @@ tallene i loggen ikke sammenliknbare fra økt til økt.
 | GET | `/api/users?name=X` | finnes navnet fra før? |
 | POST | `/api/users` | registrer `{ name, pin }` |
 | POST | `/api/users/verify` | logg inn `{ name, pin }` |
+| GET | `/api/users/gjengen?userId=X` | navn og id for alle registrerte |
 | GET | `/api/users/admin?password=X` | liste brukere (admin) |
 | PATCH | `/api/users/admin/:id` | sett ny PIN (admin) |
 | DELETE | `/api/users/admin/:id?password=X` | slett bruker (admin) |
