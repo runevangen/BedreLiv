@@ -504,6 +504,133 @@
   .utv-dom.opp { color: var(--verdigris); }
   .utv-dom.lettere { color: var(--oker); }
 
+  /* ===== Gjengen ===== */
+  .gj-seksjon { display: flex; align-items: baseline; justify-content: space-between; }
+
+  .gj-loft {
+    background: var(--verdigris-lys);
+    border-left: 3px solid var(--verdigris);
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+  .gj-loft-merke {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(11px * var(--skala));
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--verdigris);
+    margin: 0;
+  }
+  .gj-loft-navn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(22px * var(--skala));
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    margin: 2px 0 0;
+    line-height: 1.1;
+  }
+  .gj-loft-tall {
+    font-size: calc(12.5px * var(--skala));
+    line-height: 1.5;
+    color: #3A4A47;
+    margin: 3px 0 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gj-rad { border-bottom: 1px solid var(--etch); padding: 10px 2px; }
+  .gj-hode { display: flex; align-items: center; gap: 9px; }
+  .gj-hode b {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(17px * var(--skala));
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .gj-hode b em {
+    font-style: normal;
+    font-family: 'Inter', sans-serif;
+    font-size: calc(11px * var(--skala));
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--dust);
+  }
+
+  /* Én rute per økt programmet ber om. Fylt = gjort. */
+  .gj-uke { display: flex; align-items: center; gap: 3px; flex: none; }
+  .gj-uke i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 1px solid var(--etch-sterk);
+    background: var(--plate);
+  }
+  .gj-uke i.fylt { background: var(--verdigris); border-color: var(--verdigris); }
+  .gj-uke em {
+    font-style: normal;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(11px * var(--skala));
+    font-weight: 600;
+    color: var(--verdigris);
+    margin-left: 1px;
+  }
+
+  .gj-x {
+    flex: none;
+    border: none;
+    background: none;
+    color: var(--etch-sterk);
+    font-size: calc(13px * var(--skala));
+    line-height: 1;
+    padding: 3px 2px;
+    cursor: pointer;
+  }
+  .gj-x:hover { color: var(--dust); }
+
+  .gj-under {
+    font-size: calc(11.5px * var(--skala));
+    line-height: 1.5;
+    color: var(--dust);
+    margin: 3px 0 0;
+  }
+  .gj-dom {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(12px * var(--skala));
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--dust-sterk);
+  }
+  .gj-dom.opp { color: var(--verdigris); }
+  .gj-dom.lettere { color: var(--oker); }
+
+  .gj-skjulte {
+    font-size: calc(11.5px * var(--skala));
+    line-height: 1.6;
+    color: var(--dust);
+    margin: 10px 0 0;
+  }
+
+  .inviter {
+    width: 100%;
+    background: var(--plate);
+    border: 1px solid var(--verdigris);
+    border-radius: 3px;
+    color: var(--verdigris);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(16px * var(--skala));
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 11px;
+    margin-top: 14px;
+    cursor: pointer;
+  }
+
   .okt {
     border-bottom: 1px solid var(--etch);
     padding: 10px 0;
@@ -914,7 +1041,8 @@
     }
   ];
 
-  var okter = [];
+  var okter = [];       // mine egne, eldst først
+  var alleOkter = [];   // hele gjengen sine, eldst først
   var utkast = {};
   var portModus = 'inn'; // 'inn' | 'ny'
 
@@ -1024,6 +1152,7 @@
     h += '<p class="kvittering" id="kvittering"></p>';
 
     h += utviklingBlokk();
+    h += gjengenBlokk();
 
     h += '<h2 class="seksjon">Loggen</h2>';
     if (!okter.length) {
@@ -1068,6 +1197,8 @@
 
     var f = document.getElementById('fokus-start');
     if (f) f.addEventListener('click', apneFokus);
+
+    kobleGjengen();
 
     var mer = document.querySelectorAll('.vis-mer');
     for (var n = 0; n < mer.length; n++) {
@@ -1125,9 +1256,11 @@
   // fordi én rep mer er reell framgang selv om manualen er den samme.
   var TREND_OKTER = 6;
 
-  function volumSerie(id) {
+  function volumSerie(id) { return volumSerieFra(okter, id); }
+
+  function volumSerieFra(liste, id) {
     var ut = [];
-    okter.forEach(function (o) {
+    liste.forEach(function (o) {
       var e = o.ovelser[id];
       if (e && e.vekt && e.reps) {
         ut.push({ volum: e.vekt * e.reps, vekt: e.vekt, reps: e.reps });
@@ -1256,6 +1389,276 @@
       '</div>' + rader;
   }
 
+  // ===== Gjengen =====
+  // Bedreliv er en venneapp: alle ser alle. Du kan ikke skru av at DU er
+  // synlig for andre — men du bestemmer over din egen skjerm, og kan både
+  // legge bort hele delen og skjule enkeltpersoner fra din visning.
+  var GJENG_KEY = 'bedrelivGjengSkjult';
+  var SKJULTE_KEY = 'bedrelivSkjulte';
+  var MAL_PER_UKE = 2;   // programmet: to ganger i uka
+
+  function gjengSkjult() {
+    try { return localStorage.getItem(GJENG_KEY) === '1'; } catch (e) { return false; }
+  }
+
+  function skjultePersoner() {
+    try { return JSON.parse(localStorage.getItem(SKJULTE_KEY)) || []; } catch (e) { return []; }
+  }
+
+  function lagreSkjulte(liste) {
+    try { localStorage.setItem(SKJULTE_KEY, JSON.stringify(liste)); } catch (e) {}
+  }
+
+  // Uker går fra mandag. Nøkkelen er selve mandagsdatoen, ikke et regnestykke
+  // på millisekunder — sommertid flytter døgn med en time, og et uketall
+  // regnet ut av differanser kan da havne i feil uke.
+  function ukeStart(d) {
+    var x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+    return x;
+  }
+  function ukeNokkel(d) { return ukeStart(d).toDateString(); }
+  function forrigeUke(d) { return ukeStart(new Date(ukeStart(d).getTime() - 7 * 86400000)); }
+
+  // Uker på rad med minst to økter. Inneværende uke er ennå ikke over, så den
+  // bryter aldri rekka — er den ikke fylt opp, telles det fra forrige uke.
+  function ukerPaaRad(dater) {
+    var teller = {};
+    dater.forEach(function (d) {
+      var k = ukeNokkel(d);
+      teller[k] = (teller[k] || 0) + 1;
+    });
+    var uke = ukeStart(new Date());
+    if ((teller[ukeNokkel(uke)] || 0) < MAL_PER_UKE) uke = forrigeUke(uke);
+    var n = 0;
+    while ((teller[ukeNokkel(uke)] || 0) >= MAL_PER_UKE) {
+      n++;
+      uke = forrigeUke(uke);
+    }
+    return n;
+  }
+
+  // Retningen til én person: samme øvelsesvise trend som din egen utvikling,
+  // og så flertallet. Totalvolum per økt ville vært misvisende — en økt der du
+  // rakk to øvelser ville sett ut som et fall.
+  function personRetning(egneOkter) {
+    var tell = { opp: 0, likt: 0, lettere: 0 };
+    OVELSER.forEach(function (ov) {
+      var t = trend(volumSerieFra(egneOkter, ov.id));
+      if (t) tell[t.retning]++;
+    });
+    if (!tell.opp && !tell.likt && !tell.lettere) return null;
+    return tell.opp > tell.lettere ? 'opp' : tell.lettere > tell.opp ? 'lettere' : 'likt';
+  }
+
+  function grupperPerPerson() {
+    var pers = {};
+    alleOkter.forEach(function (o) {
+      var id = o.ownerId || 'ukjent';
+      if (!pers[id]) pers[id] = { id: id, navn: o.savedBy || 'Ukjent', okter: [] };
+      if (o.savedBy) pers[id].navn = o.savedBy;   // nyeste navn vinner
+      pers[id].okter.push(o);
+    });
+    return pers;
+  }
+
+  function gjengData() {
+    var pers = grupperPerPerson();
+    var naa = ukeNokkel(new Date());
+    var meg = Api.currentUserId();
+
+    return Object.keys(pers).map(function (k) {
+      var p = pers[k];
+      var dater = p.okter.map(function (o) { return new Date(o.dato); });
+      return {
+        id: p.id,
+        navn: p.navn,
+        erMeg: p.id === meg,
+        antall: p.okter.length,
+        iUka: dater.filter(function (d) { return ukeNokkel(d) === naa; }).length,
+        rad: ukerPaaRad(dater),
+        sist: dater.length ? dater[dater.length - 1] : null,
+        retning: personRetning(p.okter)
+      };
+    }).sort(function (a, b) {
+      // Flest økter denne uka øverst, så flest uker på rad. Aldri etter vekt:
+      // det ville gjort den sterkeste til evig vinner.
+      if (b.iUka !== a.iUka) return b.iUka - a.iUka;
+      if (b.rad !== a.rad) return b.rad - a.rad;
+      return a.navn.localeCompare(b.navn, 'nb');
+    });
+  }
+
+  // Ukas løft: den største RELATIVE framgangen denne uka, målt mot personens
+  // egen forrige økt i samme øvelse. Relativt, ikke absolutt — ellers vinner
+  // den tyngste hver uke, og alle andre slutter å se etter.
+  function ukasLoft() {
+    var pers = grupperPerPerson();
+    var naa = ukeNokkel(new Date());
+    var best = null;
+
+    Object.keys(pers).forEach(function (k) {
+      var p = pers[k];
+      OVELSER.forEach(function (ov) {
+        var rekke = [];
+        p.okter.forEach(function (o) {
+          var e = o.ovelser[ov.id];
+          if (e && e.vekt && e.reps) rekke.push({ dato: new Date(o.dato), e: e });
+        });
+        if (rekke.length < 2) return;
+        var siste = rekke[rekke.length - 1];
+        if (ukeNokkel(siste.dato) !== naa) return;
+        var forrige = rekke[rekke.length - 2];
+        var fra = forrige.e.vekt * forrige.e.reps;
+        var til = siste.e.vekt * siste.e.reps;
+        if (!fra || til <= fra) return;
+        var pst = (til - fra) / fra;
+        if (!best || pst > best.pst) {
+          best = {
+            navn: p.navn, ovelse: ov.navn, pst: pst,
+            fra: forrige.e, til: siste.e
+          };
+        }
+      });
+    });
+    return best;
+  }
+
+  function ukePrikker(n) {
+    var ut = '<span class="gj-uke" aria-label="' + n + ' av ' + MAL_PER_UKE + ' økter denne uka">';
+    for (var i = 0; i < MAL_PER_UKE; i++) ut += '<i' + (i < n ? ' class="fylt"' : '') + '></i>';
+    if (n > MAL_PER_UKE) ut += '<em>+' + (n - MAL_PER_UKE) + '</em>';
+    return ut + '</span>';
+  }
+
+  function sidenTekst(d) {
+    if (!d) return 'ingen økter ennå';
+    var dager = Math.round((ukeStart(new Date()).getTime() - ukeStart(d).getTime()) / 604800000);
+    var iDag = new Date(); iDag.setHours(0, 0, 0, 0);
+    var da = new Date(d); da.setHours(0, 0, 0, 0);
+    var diff = Math.round((iDag - da) / 86400000);
+    if (diff <= 0) return 'trente i dag';
+    if (diff === 1) return 'trente i går';
+    if (diff < 7) return 'trente for ' + diff + ' dager siden';
+    if (diff < 14) return 'trente forrige uke';
+    return 'sist for ' + Math.floor(diff / 7) + ' uker siden';
+  }
+
+  function gjengenBlokk() {
+    var h = '<h2 class="seksjon gj-seksjon">Gjengen' +
+      '<button type="button" class="lenke" id="gj-bryter">' +
+      (gjengSkjult() ? 'Vis' : 'Skjul') + '</button></h2>';
+
+    if (gjengSkjult()) {
+      return h + '<p class="tomt">Gjengen er lagt bort på din skjerm. De andre ser deg fortsatt — ' +
+        'det er hele poenget med en venneapp.</p>';
+    }
+
+    var alle = gjengData();
+    if (alle.length < 2) {
+      return h + '<p class="tomt">Foreløpig er det bare deg her. Inviter noen, så blir det gøyere.</p>' +
+        inviterKnapp();
+    }
+
+    var skjulte = skjultePersoner();
+    var vist = alle.filter(function (p) { return skjulte.indexOf(p.id) < 0; });
+
+    var loft = ukasLoft();
+    var loftHtml = loft
+      ? '<div class="gj-loft"><p class="gj-loft-merke">Ukas løft</p>' +
+        '<p class="gj-loft-navn">' + esc(loft.navn) + '</p>' +
+        '<p class="gj-loft-tall">' + loft.ovelse + ': ' + loft.fra.vekt + ' kg × ' + loft.fra.reps +
+        ' → <b>' + loft.til.vekt + ' kg × ' + loft.til.reps + '</b> ' +
+        '(+' + Math.round(loft.pst * 100) + ' %)</p></div>'
+      : '<div class="gj-loft"><p class="gj-loft-merke">Ukas løft</p>' +
+        '<p class="gj-loft-tall">Ingen har slått seg selv denne uka ennå. Det er fortsatt tid.</p></div>';
+
+    var rader = vist.map(function (p) {
+      var ord = p.retning ? trendMerke(p.retning) : 'For få økter';
+      var klasse = p.retning || '';
+      var biter = [];
+      if (p.rad) biter.push(p.rad + (p.rad === 1 ? ' uke på rad' : ' uker på rad'));
+      biter.push(sidenTekst(p.sist));
+      biter.push(p.antall + (p.antall === 1 ? ' økt totalt' : ' økter totalt'));
+
+      return '<div class="gj-rad">' +
+        '<div class="gj-hode">' +
+          '<b>' + esc(p.navn) + (p.erMeg ? ' <em>(deg)</em>' : '') + '</b>' +
+          ukePrikker(p.iUka) +
+          (p.erMeg ? '' : '<button type="button" class="gj-x" data-skjul="' + p.id +
+            '" aria-label="Skjul ' + esc(p.navn) + ' fra min visning">✕</button>') +
+        '</div>' +
+        '<p class="gj-under"><span class="gj-dom ' + klasse + '">' + ord + '</span> · ' +
+        biter.join(' · ') + '</p>' +
+        '</div>';
+    }).join('');
+
+    var skjultHtml = '';
+    if (skjulte.length) {
+      var navn = alle.filter(function (p) { return skjulte.indexOf(p.id) >= 0; });
+      skjultHtml = '<p class="gj-skjulte">Skjult på din skjerm: ' +
+        navn.map(function (p) {
+          return '<button type="button" class="lenke" data-vis="' + p.id + '">' + esc(p.navn) + '</button>';
+        }).join(', ') + ' — trykk for å hente tilbake.</p>';
+    }
+
+    return h + loftHtml + rader + skjultHtml + inviterKnapp();
+  }
+
+  function inviterKnapp() {
+    return '<button type="button" class="inviter" id="inviter">Inviter en venn</button>' +
+      '<p class="kvittering" id="invitert"></p>';
+  }
+
+  function kobleGjengen() {
+    var bryter = document.getElementById('gj-bryter');
+    if (bryter) bryter.addEventListener('click', function () {
+      try { localStorage.setItem(GJENG_KEY, gjengSkjult() ? '0' : '1'); } catch (e) {}
+      tegn();
+    });
+
+    var vert = document.getElementById('innhold');
+    vert.querySelectorAll('[data-skjul]').forEach(function (k) {
+      k.addEventListener('click', function () {
+        var liste = skjultePersoner();
+        liste.push(k.getAttribute('data-skjul'));
+        lagreSkjulte(liste);
+        tegn();
+      });
+    });
+    vert.querySelectorAll('[data-vis]').forEach(function (k) {
+      k.addEventListener('click', function () {
+        var id = k.getAttribute('data-vis');
+        lagreSkjulte(skjultePersoner().filter(function (x) { return x !== id; }));
+        tegn();
+      });
+    });
+
+    var inv = document.getElementById('inviter');
+    if (inv) inv.addEventListener('click', inviter);
+  }
+
+  function inviter() {
+    var lenke = location.origin + location.pathname;
+    var tekst = 'Bli med i styrkeloggen — 10 minutter, to ganger i uka.';
+    var kvitt = document.getElementById('invitert');
+    var si = function (t) { if (kvitt) kvitt.textContent = t; };
+
+    if (navigator.share) {
+      // Avbryter du delingsmenyen, kaster den. Det er ikke en feil å melde om.
+      navigator.share({ title: 'Bedreliv — Styrkelogg', text: tekst, url: lenke }).catch(function () {});
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(tekst + ' ' + lenke)
+        .then(function () { si('Lenka er kopiert — lim den inn der du vil.'); })
+        .catch(function () { si(lenke); });
+      return;
+    }
+    si(lenke);
+  }
+
   // ===== Lagring mot backend =====
   function lagre(fraFokus) {
     var ovelser = {};
@@ -1271,7 +1674,10 @@
 
     Api.saveOkt(ovelser).then(function (okt) {
       okter.push(okt);
-      okter.sort(function (a, b) { return new Date(a.dato) - new Date(b.dato); });
+      alleOkter.push(okt);
+      var etterDato = function (a, b) { return new Date(a.dato) - new Date(b.dato); };
+      okter.sort(etterDato);
+      alleOkter.sort(etterDato);
       utkast = {};
       fokusPos = 0;   // ny økt starter øverst i sirkelen igjen
       // Lagret fra fokus: lukk stille og la loggskjermen bak vise kvitteringen.
@@ -1299,8 +1705,10 @@
     var knapp = document.getElementById('slett');
     if (knapp) { knapp.disabled = true; knapp.textContent = 'Sletter …'; }
 
+    var uid = Api.currentUserId();
     Promise.all(okter.map(function (o) { return Api.deleteOkt(o.id); })).then(function () {
       okter = [];
+      alleOkter = alleOkter.filter(function (o) { return o.ownerId !== uid; });
       tegn();
       oppdaterAntall();
       kvittering('Loggen er tømt.', false);
@@ -1317,7 +1725,12 @@
 
   function lastOkter() {
     return Api.listOkter().then(function (liste) {
-      okter = liste;
+      // Serveren gir hele gjengen. «Forrige økt», loggen og din egen utvikling
+      // skal bare regne på dine egne — ellers ville du blitt sammenliknet med
+      // en venn uten å vite det.
+      alleOkter = liste;
+      var uid = Api.currentUserId();
+      okter = liste.filter(function (o) { return o.ownerId === uid; });
       tegn();
       oppdaterAntall();
     });
@@ -1691,6 +2104,7 @@
   function loggUt() {
     Api.logout();
     okter = [];
+    alleOkter = [];
     utkast = {};
     visPort();
   }

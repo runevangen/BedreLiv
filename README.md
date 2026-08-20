@@ -67,6 +67,34 @@ Reglene er de samme som i UltimatePizza:
   hver gang. Filformatet er likt UltimatePizza sitt, så `rydd_changelog.py`
   derfra kan brukes når det blir aktuelt
 
+## Gjengen
+
+Bedreliv er en venneapp: alle ser hverandres økter. `GET /api/okter` filtrerer
+derfor ikke på eierskap — det gjør bare skriveoperasjonene, som fortsatt er
+forbeholdt eieren. Feltet `shared` blir stående på postene for historikkens
+skyld, men styrer ikke lenger hvem som får se dem.
+
+Klienten holder to lister: `okter` (dine egne) og `alleOkter` (hele gjengen).
+Din egen logg, «forrige økt» og utviklingen regner **kun** på `okter`. Uten det
+skillet ville du blitt sammenliknet med en venn uten å vite det.
+
+Gjengdelen viser per person: ruter for ukas to økter, uker på rad, retning og
+sist trent. Sortert på aktivitet denne uka, aldri på vekt.
+
+**Ukas løft** er den største relative framgangen denne uka, målt mot personens
+egen forrige økt i samme øvelse. Relativt framfor absolutt: ellers vinner den
+tyngste hver uke.
+
+### Hva du styrer, og hva du ikke styrer
+
+Du kan ikke skru av at du er synlig for de andre — det er premisset. Men din
+egen skjerm styrer du: `bedrelivGjengSkjult` legger bort hele delen, og
+`bedrelivSkjulte` skjuler enkeltpersoner. Begge er lokale og reversible, og
+påvirker ingen andre.
+
+`userId` kreves for å liste økter. Det er en fartsdump mot tilfeldig skraping,
+ikke en lås — triviell å forfalske, og skal ikke forveksles med innlogging.
+
 ## Utvikling
 
 Under øvelsene ligger en utviklingsdel: per øvelse en sparkline over de siste

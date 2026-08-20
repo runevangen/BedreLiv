@@ -15,6 +15,17 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.07",
+    "d": "august 2026",
+    "changes": [
+      "Gjengen er her. Bedreliv er en venneapp, og alle ser nå hverandres økter: én rad per person med ruter for ukas to økter, uker på rad, retningen på treningen og når vedkommende sist trente. Mest aktiv denne uka står øverst — aldri sortert etter vekt, for da hadde den sterkeste vunnet hver eneste uke og alle andre sluttet å se etter.",
+      "«Ukas løft» trekker fram én person: den største RELATIVE framgangen denne uka, målt mot personens egen forrige økt i samme øvelse. Går du fra 10 til 14 kg, slår du den som gikk fra 26 til 28 — målestokken er deg selv, ikke gjengen.",
+      "Du kan ikke skru av at du er synlig for de andre; det er premisset for en venneapp. Men skjermen din er din: legg bort hele gjengen, eller skjul enkeltpersoner. Begge deler gjelder bare din egen visning, huskes på telefonen, og kan hentes tilbake.",
+      "«Inviter en venn» sender lenka via telefonens delingsmeny, eller kopierer den om nettleseren ikke har delingsmeny.",
+      "Under panseret: serveren returnerer nå hele gjengens økter, mens appen skiller mellom dine og de andres. Uten det skillet ville «forrige økt» og din egen utvikling plutselig sammenliknet deg med en venn. Å endre eller slette er fortsatt forbeholdt eieren — bare det å se er blitt felles."
+    ]
+  },
+  {
     "v": "0.06",
     "d": "august 2026",
     "changes": [

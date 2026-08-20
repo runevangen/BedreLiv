@@ -3,8 +3,8 @@ import { getStore } from '@netlify/blobs';
 // Loggførte styrkeøkter — én blob per økt. Samme mønster som bakes.js i
 // pizzame: hver økt eies av den som lagret den, og er privat som standard.
 //
-// GET    /api/okter?userId=X         -> egne økter (+ delte, + eldre uten eier)
-// GET    /api/okter?admin=PASSWORD   -> alle (admin)
+// GET    /api/okter?userId=X         -> ALLE i gjengen sine økter, eldst først
+// GET    /api/okter?admin=PASSWORD   -> det samme (admin)
 // POST   /api/okter                  -> ny økt { ownerId, dato, ovelser, savedBy?, shared? }
 // PATCH  /api/okter/:id              -> rett opp en økt { userId, ovelser?, dato?, shared? }
 // DELETE /api/okter/:id?userId=X     -> slett (kun eier eller admin)
@@ -35,10 +35,14 @@ function isAdminPw(pw) {
   return !!ADMIN_PASSWORD && !!pw && pw === ADMIN_PASSWORD;
 }
 
-// Økter uten eier er åpne (bakoverkompatibelt), eide økter er private til de
-// deles. Eieren har alltid tilgang.
-function isPublic(okt) { return !okt.ownerId || okt.shared === true; }
-function ownedBy(okt, userId) { return okt.ownerId && userId && okt.ownerId === userId; }
+// Bedreliv er en venneapp: alle i gjengen ser hverandres økter. GET filtrerer
+// derfor ikke på eierskap lenger — det gjør bare skriveoperasjonene, som
+// fortsatt er forbeholdt eieren. Feltet «shared» blir stående på postene for
+// historikkens skyld, men styrer ikke lenger hvem som får se dem.
+//
+// userId må være med for å liste. Det er en fartsdump mot tilfeldig skraping,
+// ikke en lås — den er triviell å forfalske og skal ikke forveksles med
+// innlogging. Innholdet er navn, kilo og datoer, ingen hemmeligheter.
 
 function cleanStr(v, max) {
   return typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null;
@@ -79,6 +83,7 @@ export default async (req) => {
     if (req.method === 'GET') {
       const userId = url.searchParams.get('userId') || null;
       const isAdmin = isAdminPw(url.searchParams.get('admin'));
+      if (!userId && !isAdmin) return json(400, { error: 'Mangler userId' });
       const { blobs } = await store.list();
       // Isoler hver post: én korrupt blob skal ikke velte hele loggen.
       const raw = await Promise.all(
@@ -91,8 +96,7 @@ export default async (req) => {
           }
         })
       );
-      let okter = raw.filter((x) => x && typeof x === 'object');
-      if (!isAdmin) okter = okter.filter((o) => isPublic(o) || ownedBy(o, userId));
+      const okter = raw.filter((x) => x && typeof x === 'object');
       // Eldst først — front-end regner «forrige økt» ut fra rekkefølgen.
       okter.sort((a, b) => new Date(a.dato || 0) - new Date(b.dato || 0));
       return json(200, { okter });
