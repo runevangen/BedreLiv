@@ -187,6 +187,16 @@ Antall runder står som `RUNDER` ett sted i `index.html`. Kortene, fokus,
 rettevinduet og prikkeraden leser den, så alt følger etter om tallet endres.
 Serveren har et tak på 12 runder per øvelse.
 
+**Runde én fyller de andre.** `spreFraForste()` kopierer runde éns tall til
+senere runder — men bare til felt du ikke selv har rørt. Merkingen (`rortVekt`,
+`rortReps`) er per **felt**, ikke per runde: retter du reps i siste runde,
+følger vekta der fortsatt runde én.
+
+**Dagen økta føres på** velges øverst (`oktDato`, null = i dag). Lagreknappen
+skriver ut dagen, så det aldri er tvil om hvor tallene havner. Uten dette måtte
+en glemt økt føres via «rett opp» på en gammel dag — og da skriver man over den
+dagen i stedet for å lage en ny.
+
 **Alt som sammenliknes går på den tyngste runden**, ikke summen — `besteRunde()`.
 Summen ville falt bare fordi man rakk to runder i stedet for tre, og kalt en god
 dag et tilbakesteg.

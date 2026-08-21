@@ -795,6 +795,59 @@
   /* ===== Fokus: én øvelse i fullskjerm =====
      For telefonen satt fra deg mellom settene — store tall, store knapper,
      og skjermen holdes våken så den ikke sovner midt i en runde. */
+  /* Hvilken dag økta føres på. Står øverst, over øvelsene, så det aldri er
+     tvil — og lar en glemt økt føres uten å gå veien om «rett opp». */
+  .okt-dag {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--plate);
+    border: 1px solid var(--etch);
+    border-radius: 3px;
+    padding: 9px 11px;
+    margin-bottom: 12px;
+  }
+  .okt-dag label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(11.5px * var(--skala));
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dust);
+    flex: none;
+  }
+  .okt-dag input {
+    flex: 1;
+    min-width: 0;
+    background: var(--paper);
+    border: 1px solid var(--etch-sterk);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: calc(16px * var(--skala));
+    padding: 6px 8px;
+  }
+  .okt-dag-navn {
+    flex: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(13px * var(--skala));
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--verdigris);
+    white-space: nowrap;
+  }
+
+  /* Lagreknappen sier hvilken dag den skriver til. */
+  .lagre span {
+    display: block;
+    font-size: calc(11.5px * var(--skala));
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    opacity: 0.85;
+    margin-top: 1px;
+  }
+
   .fokus-start {
     width: 100%;
     background: var(--verdigris);
@@ -1362,6 +1415,9 @@
   var alleOkter = [];   // hele gjengen sine, eldst først
   var brukere = [];     // alle registrerte, også de som ikke har trent ennå
   var utkast = {};
+  // Hvilken dag økta føres på. null = i dag. Å kunne velge dagen her er det
+  // som gjør at en glemt økt ikke må gå veien om «rett opp» på en gammel dag.
+  var oktDato = null;
   var portModus = 'inn'; // 'inn' | 'ny'
 
   function volum(v, r) { return (v || 0) * (r || 0); }
@@ -1451,6 +1507,10 @@
 
     h += programRad();
 
+    h += '<div class="okt-dag"><label for="okt-dato">Økt for</label>' +
+         '<input id="okt-dato" type="date" value="' + valgtDatoFelt() + '">' +
+         '<span class="okt-dag-navn" id="okt-dag-navn">' + datoTekst(valgtDatoISO()) + '</span></div>';
+
     h += '<button class="fokus-start" id="fokus-start">Fokus' +
          '<span>én øvelse om gangen · store tall · skjermen sovner ikke</span></button>';
 
@@ -1493,7 +1553,8 @@
       h += '</div>';
     });
 
-    h += '<button class="lagre" id="lagre"' + (harUtkast() ? '' : ' disabled') + '>Lagre økta</button>';
+    h += '<button class="lagre" id="lagre"' + (harUtkast() ? '' : ' disabled') + '>Lagre økta' +
+         '<span id="lagre-dag">' + datoTekst(valgtDatoISO()) + '</span></button>';
     h += '<p class="kvittering" id="kvittering"></p>';
 
     h += utviklingBlokk();
@@ -1530,8 +1591,13 @@
             var el = document.getElementById(p + '-' + ov.id + '-' + runde);
             if (!el) return;
             el.addEventListener('input', function () {
-              var post = utkastRunde(ov.id, runde);
-              post[p === 'v' ? 'vekt' : 'reps'] = el.value === '' ? null : parseFloat(el.value);
+              var endret = settFelt(ov.id, runde,
+                p === 'v' ? 'vekt' : 'reps',
+                el.value === '' ? null : parseFloat(el.value));
+              // Ble andre runder fylt ut, må feltene deres oppdateres. Vi
+              // skriver rett i dem framfor å tegne kortet på nytt — ellers
+              // mister feltet du står i markøren for hvert tastetrykk.
+              if (endret) speilRunder(ov);
               oppdaterRad(ov);
               oppdaterKnapp();
             });
@@ -1545,6 +1611,16 @@
 
     var s = document.getElementById('slett');
     if (s) s.addEventListener('click', tomLogg);
+
+    var dagFelt = document.getElementById('okt-dato');
+    if (dagFelt) dagFelt.addEventListener('change', function () {
+      oktDato = dagFelt.value || null;
+      var tekst = datoTekst(valgtDatoISO());
+      var a = document.getElementById('okt-dag-navn');
+      if (a) a.textContent = tekst;
+      var b = document.getElementById('lagre-dag');
+      if (b) b.textContent = tekst;
+    });
 
     var f = document.getElementById('fokus-start');
     if (f) f.addEventListener('click', apneFokus);
@@ -1591,6 +1667,18 @@
     return d > 0 ? '▲ opp' : d < 0 ? '▼ ned' : '= likt';
   }
 
+  // Skriver utkastet tilbake i feltene uten å bygge kortet på nytt.
+  function speilRunder(ov) {
+    var liste = utkastRunder(ov.id);
+    for (var r = 1; r < RUNDER; r++) {
+      var post = liste[r] || {};
+      var vf = document.getElementById('v-' + ov.id + '-' + r);
+      var rf = document.getElementById('r-' + ov.id + '-' + r);
+      if (vf && document.activeElement !== vf) vf.value = post.vekt != null ? post.vekt : '';
+      if (rf && document.activeElement !== rf) rf.value = post.reps != null ? post.reps : '';
+    }
+  }
+
   function oppdaterRad(ov) {
     var rad = document.getElementById('rad-' + ov.id);
     var dom = rad.querySelector('.dommen');
@@ -1612,6 +1700,40 @@
     return liste[r];
   }
 
+  // Rundene er som regel like. Skriver du 6,5 kg × 8 i runde én, fylles de
+  // øvrige med det samme — men bare de feltene du ikke selv har rørt.
+  //
+  // Merkingen er per FELT, ikke per runde. Retter du siste runde ned til 6
+  // reps fordi forma sviktet, skal vekta der fortsatt følge runde én: den har
+  // du ikke rørt. Merket vi hele runden, ville ett rettet tall frosset det
+  // andre også.
+  var RORT = { vekt: 'rortVekt', reps: 'rortReps' };
+
+  function spreFraForste(id) {
+    var liste = utkastRunder(id);
+    var forste = liste[0];
+    if (!forste) return;
+    for (var r = 1; r < RUNDER; r++) {
+      if (!liste[r]) liste[r] = {};
+      ['vekt', 'reps'].forEach(function (felt) {
+        if (liste[r][RORT[felt]]) return;
+        if (forste[felt] != null) liste[r][felt] = forste[felt];
+      });
+    }
+  }
+
+  // Skriver et felt og forplanter fra runde én. Returnerer true når andre
+  // runder ble endret, så den som kaller vet at feltene må speiles.
+  function settFelt(id, runde, felt, verdi) {
+    var post = utkastRunde(id, runde);
+    post[felt] = verdi;
+    post[RORT[felt]] = true;
+    if (runde !== 0) return false;
+    var for_ = JSON.stringify(utkastRunder(id));
+    spreFraForste(id);
+    return JSON.stringify(utkastRunder(id)) !== for_;
+  }
+
   // Beste utfylte runde i utkastet — samme regel som for lagrede økter.
   function besteUtkast(id) {
     var beste = null;
@@ -1629,6 +1751,17 @@
   function oppdaterKnapp() {
     var l = document.getElementById('lagre');
     if (l) l.disabled = !harUtkast();
+  }
+
+  // Datoen økta føres på. Uten valg: i dag, med klokkeslettet nå, så flere
+  // økter samme dag beholder rekkefølgen sin.
+  function valgtDatoISO() {
+    if (!oktDato) return new Date().toISOString();
+    return new Date(oktDato + 'T12:00:00').toISOString();
+  }
+
+  function valgtDatoFelt() {
+    return oktDato || datoFeltVerdi(new Date().toISOString());
   }
 
   function kvittering(tekst, erFeil) {
@@ -2379,14 +2512,15 @@
     var opprinnelig = knapp ? knapp.textContent : '';
     if (knapp) { knapp.disabled = true; knapp.textContent = 'Lagrer …'; }
 
-    Api.saveOkt(ovelser).then(function (okt) {
+    Api.saveOkt(ovelser, valgtDatoISO()).then(function (okt) {
       okter.push(okt);
       alleOkter.push(okt);
       var etterDato = function (a, b) { return new Date(a.dato) - new Date(b.dato); };
       okter.sort(etterDato);
       alleOkter.sort(etterDato);
       utkast = {};
-      fokusPos = 0;   // ny økt starter øverst i sirkelen igjen
+      oktDato = null;   // neste økt gjelder i dag igjen
+      fokusPos = 0;     // ny økt starter øverst i sirkelen igjen
       // Lagret fra fokus: lukk stille og la loggskjermen bak vise kvitteringen.
       if (fraFokus) lukkFokus(true);
       tegn();
@@ -2707,7 +2841,7 @@
     [['fv', 'vekt'], ['fr', 'reps']].forEach(function (par) {
       var el = document.getElementById(par[0]);
       el.addEventListener('input', function () {
-        utkastRunde(ov.id, runde)[par[1]] = el.value === '' ? null : parseFloat(el.value);
+        settFelt(ov.id, runde, par[1], el.value === '' ? null : parseFloat(el.value));
         oppdaterFokusDom();
       });
     });

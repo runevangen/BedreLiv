@@ -15,6 +15,15 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.13",
+    "d": "august 2026",
+    "changes": [
+      "Fyller du inn runde én, fylles de andre rundene med det samme. Er de like — som de som regel er — er du ferdig etter to tall. Retter du siste runde ned fordi forma sviktet, blir den rettingen stående, også om du etterpå endrer runde én. Merkingen er per felt, ikke per runde: retter du reps i siste runde, følger vekta der fortsatt runde én, for den har du ikke rørt.",
+      "Øverst står det nå «Økt for» med dagen skrevet ut, og lagreknappen sier hvilken dag den skriver til. Før sto datoen bare løst i hjørnet uten å si hva den gjaldt.",
+      "Du kan velge dagen når du lagrer. Glemte du å føre inn onsdagens økt, setter du datoen og lagrer — uten å måtte gå veien om «rett opp» på en gammel økt, som er nettopp den veien som gjør at dagens tall kan havne på feil dag."
+    ]
+  },
+  {
     "v": "0.12",
     "d": "august 2026",
     "changes": [
