@@ -7,6 +7,8 @@ import { getStore } from '@netlify/blobs';
 // GET    /api/okter?admin=PASSWORD   -> det samme (admin)
 // POST   /api/okter                  -> ny økt { ownerId, dato, ovelser, savedBy?, shared? }
 // PATCH  /api/okter/:id              -> rett opp en økt { userId, ovelser?, dato?, shared? }
+//                                       Endres tallene, nullstilles heiaropene:
+//                                       de gjaldt økta slik den sto.
 // DELETE /api/okter/:id?userId=X     -> slett (kun eier eller admin)
 // POST   /api/okter/:id/heiarop      -> heia på / ta bort heiarop { userId, navn }
 //
@@ -182,6 +184,12 @@ export default async (req) => {
       if (body.ovelser !== undefined) {
         const ovelser = cleanOvelser(body.ovelser);
         if (!ovelser) return json(400, { error: 'Økta inneholder ingen gyldige løft' });
+        // Heiarop er en reaksjon på bestemte tall. Endres tallene, gjelder de
+        // ikke lenger det noen heiet på, og fjernes. Flytter du bare datoen,
+        // står de — da er løftene de samme.
+        if (JSON.stringify(ovelser) !== JSON.stringify(existing.ovelser)) {
+          updated.heiarop = [];
+        }
         updated.ovelser = ovelser;
       }
       const dato = cleanDato(body.dato);

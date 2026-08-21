@@ -959,6 +959,176 @@
   .fokus-fram { flex: 1; border: none; background: var(--verdigris); color: #FFFFFF; }
   .fokus-fram:disabled { background: var(--etch); color: var(--dust); cursor: default; }
 
+  /* ===== Rett opp en økt ===== */
+  #rett {
+    position: fixed;
+    inset: 0;
+    z-index: 92;
+    display: none;
+    flex-direction: column;
+    background: var(--paper);
+    color: var(--ink);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  #rett.apen { display: flex; }
+  #rett-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  .rett-topp {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .rett-tittel {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(12.5px * var(--skala));
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dust);
+  }
+  .rett-rull {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 14px 16px;
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .rett-dato label {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(11.5px * var(--skala));
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dust);
+    margin-bottom: 4px;
+  }
+  .rett-dato input {
+    width: 100%;
+    background: var(--plate);
+    border: 1px solid var(--etch-sterk);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: calc(17px * var(--skala));
+    padding: 10px 11px;
+  }
+  .rett-ovelse {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--etch);
+  }
+  .rett-navn {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(16px * var(--skala));
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    padding-bottom: 9px;
+  }
+  .rett-felt { flex: 0 0 84px; }
+  .rett-felt label {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(10.5px * var(--skala));
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dust);
+    margin-bottom: 3px;
+  }
+  .rett-felt input {
+    width: 100%;
+    background: var(--plate);
+    border: 1px solid var(--etch-sterk);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(24px * var(--skala));
+    font-weight: 600;
+    padding: 6px 8px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .rett-varsel {
+    font-size: calc(11.5px * var(--skala));
+    line-height: 1.5;
+    color: var(--dust);
+    margin: 12px 0 0;
+  }
+  .rett-melding {
+    font-size: calc(12.5px * var(--skala));
+    line-height: 1.5;
+    color: var(--rust);
+    margin: 10px 0 0;
+    min-height: 18px;
+  }
+  .rett-slett {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--etch-sterk);
+    color: var(--dust);
+    font-family: 'Inter', sans-serif;
+    font-size: calc(12.5px * var(--skala));
+    padding: 10px;
+    border-radius: 2px;
+    margin-top: 18px;
+    cursor: pointer;
+  }
+  .rett-slett:hover { border-color: var(--rust); color: var(--rust); }
+  .rett-slett:disabled { opacity: 0.5; cursor: default; }
+
+  .rett-bunn { display: flex; gap: 10px; padding: 10px 16px 14px; border-top: 1px solid var(--etch); }
+  .rett-bunn button {
+    height: 52px;
+    border-radius: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(16px * var(--skala));
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .rett-avbryt {
+    flex: 0 0 110px;
+    border: 1px solid var(--etch-sterk);
+    background: var(--plate);
+    color: var(--dust);
+    white-space: nowrap;
+  }
+  .rett-lagre { flex: 1; border: none; background: var(--verdigris); color: #FFFFFF; }
+  .rett-lagre:disabled { background: var(--etch); color: var(--dust); cursor: default; }
+
+  /* Øktene i loggen er nå trykkbare. Raden beholder .okt — den er fortsatt
+     én økt — og .okt-knapp legger bare knappe-nullstillingen oppå. Den står
+     etter .okt i stilarket, så kant og luft kommer herfra. */
+  .okt-knapp {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--etch);
+    padding: 10px 2px;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+  .okt-knapp:hover { background: var(--plate); }
+  .okt-rett {
+    font-size: calc(11px * var(--skala));
+    color: var(--verdigris);
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+
   /* ===== Programlenker under banneret ===== */
   .prog-rad {
     display: flex;
@@ -1114,6 +1284,10 @@
 
 <div id="fokus" aria-hidden="true">
   <div id="fokus-body"></div>
+</div>
+
+<div id="rett" aria-hidden="true">
+  <div id="rett-body"></div>
 </div>
 
 <div id="endringer" aria-hidden="true">
@@ -1285,12 +1459,15 @@
     } else {
       for (var j = okter.length - 1; j >= 0; j--) {
         var o = okter[j];
-        h += '<div class="okt"><div class="okt-dato">' + datoTekst(o.dato) + '</div><div class="okt-tall">';
+        h += '<button type="button" class="okt okt-knapp" data-rett="' + o.id +
+             '" aria-label="Rett opp økta fra ' + datoTekst(o.dato) + '">' +
+             '<div class="okt-dato">' + datoTekst(o.dato) +
+             '<span class="okt-rett">rett opp</span></div><div class="okt-tall">';
         OVELSER.forEach(function (ov) {
           var e = o.ovelser[ov.id];
           if (e && e.vekt) h += '<span>' + ov.kort + ' ' + e.vekt + '×' + e.reps + '</span>';
         });
-        h += '</div></div>';
+        h += '</div></button>';
       }
       h += '<div class="fot"><button class="slett" id="slett">Tøm hele loggen</button></div>';
     }
@@ -1322,6 +1499,10 @@
 
     var f = document.getElementById('fokus-start');
     if (f) f.addEventListener('click', apneFokus);
+
+    document.getElementById('innhold').querySelectorAll('[data-rett]').forEach(function (k) {
+      k.addEventListener('click', function () { apneRett(k.getAttribute('data-rett')); });
+    });
 
     var su = document.getElementById('skriv-ut');
     if (su) su.addEventListener('click', skrivUt);
@@ -1517,6 +1698,153 @@
         'eller noe annet du gjorde med kroppen i går — alt teller inn. Loggen er et minne om hva ' +
         'du faktisk gjorde, ikke en dom over det.</p>' +
       '</div>' + rader;
+  }
+
+  // ===== Rett opp eller slett én økt =====
+  // Backenden har alltid kunnet begge deler; det var grensesnittet som manglet.
+  // «Tøm hele loggen» er alt-eller-ingenting og duger ikke når ett tall ble feil.
+  var rettId = null;
+
+  function rettErApen() {
+    return document.getElementById('rett').classList.contains('apen');
+  }
+
+  function toSiffer(n) { return (n < 10 ? '0' : '') + n; }
+
+  // <input type="date"> vil ha ÅÅÅÅ-MM-DD i LOKAL tid. Bruker man toISOString()
+  // her, kan datoen hoppe en dag for den som er øst for Greenwich om kvelden.
+  function datoFeltVerdi(iso) {
+    var d = new Date(iso);
+    return d.getFullYear() + '-' + toSiffer(d.getMonth() + 1) + '-' + toSiffer(d.getDate());
+  }
+
+  function finnOkt(id) {
+    for (var i = 0; i < okter.length; i++) if (okter[i].id === id) return okter[i];
+    return null;
+  }
+
+  function apneRett(id) {
+    var o = finnOkt(id);
+    if (!o) return;
+    rettId = id;
+    tegnRett(o);
+    document.getElementById('rett').classList.add('apen');
+    document.getElementById('rett').setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function lukkRett() {
+    rettId = null;
+    document.getElementById('rett').classList.remove('apen');
+    document.getElementById('rett').setAttribute('aria-hidden', 'true');
+    if (!fokusErApen()) document.body.style.overflow = '';
+  }
+
+  function tegnRett(o) {
+    var antallHeia = Array.isArray(o.heiarop) ? o.heiarop.length : 0;
+
+    var h = '<div class="rett-topp">' +
+      '<span class="rett-tittel">Rett opp økta</span>' +
+      '<button class="endr-x" id="rett-lukk" aria-label="Lukk uten å lagre">✕</button></div>';
+
+    h += '<div class="rett-rull">';
+    h += '  <div class="rett-dato"><label for="rett-dato">Dato</label>' +
+         '<input id="rett-dato" type="date" value="' + datoFeltVerdi(o.dato) + '"></div>';
+
+    OVELSER.forEach(function (ov) {
+      var e = o.ovelser[ov.id] || {};
+      h += '<div class="rett-ovelse">' +
+        '<span class="rett-navn">' + ov.navn + '</span>' +
+        '<div class="rett-felt"><label for="rv-' + ov.id + '">Vekt</label>' +
+        '<input id="rv-' + ov.id + '" type="number" inputmode="decimal" step="0.5" min="0" placeholder="–" value="' +
+        (e.vekt != null ? e.vekt : '') + '"></div>' +
+        '<div class="rett-felt"><label for="rr-' + ov.id + '">Reps</label>' +
+        '<input id="rr-' + ov.id + '" type="number" inputmode="numeric" step="1" min="0" placeholder="–" value="' +
+        (e.reps != null ? e.reps : '') + '"></div>' +
+        '</div>';
+    });
+
+    h += '  <p class="rett-varsel">Tøm begge feltene for å fjerne en øvelse fra økta. ' +
+         'Utviklingen og gjengen regnes om når du lagrer.' +
+         (antallHeia ? ' Endrer du tallene, forsvinner de ' + antallHeia +
+           (antallHeia === 1 ? ' heiaropet' : ' heiaropene') +
+           ' på denne økta — de gjaldt løftene slik de sto.' : '') + '</p>';
+    h += '  <p class="rett-melding" id="rett-melding"></p>';
+    h += '  <button type="button" class="rett-slett" id="rett-slett">Slett denne økta</button>';
+    h += '</div>';
+
+    h += '<div class="rett-bunn">' +
+      '<button class="rett-avbryt" id="rett-avbryt">Avbryt</button>' +
+      '<button class="rett-lagre" id="rett-lagre">Lagre endringer</button></div>';
+
+    document.getElementById('rett-body').innerHTML = h;
+    koblingerRett(o);
+  }
+
+  function koblingerRett(o) {
+    document.getElementById('rett-lukk').addEventListener('click', lukkRett);
+    document.getElementById('rett-avbryt').addEventListener('click', lukkRett);
+    document.getElementById('rett-lagre').addEventListener('click', function () { lagreRett(o); });
+    document.getElementById('rett-slett').addEventListener('click', function () { slettOkt(o); });
+  }
+
+  function rettMelding(t) {
+    var el = document.getElementById('rett-melding');
+    if (el) el.textContent = t || '';
+  }
+
+  function lagreRett(o) {
+    var ovelser = {};
+    OVELSER.forEach(function (ov) {
+      var v = parseFloat(document.getElementById('rv-' + ov.id).value);
+      var r = parseFloat(document.getElementById('rr-' + ov.id).value);
+      if (v > 0 && r > 0) ovelser[ov.id] = { vekt: v, reps: r };
+    });
+    if (!Object.keys(ovelser).length) {
+      rettMelding('En økt må ha minst ett løft. Vil du bli kvitt hele økta, slett den i stedet.');
+      return;
+    }
+
+    var endring = { ovelser: ovelser };
+    var nyDato = document.getElementById('rett-dato').value;
+    // Send bare dato når den faktisk er endret, så klokkeslettet på økta
+    // beholdes ved en ren tallretting.
+    if (nyDato && nyDato !== datoFeltVerdi(o.dato)) {
+      endring.dato = new Date(nyDato + 'T12:00:00').toISOString();
+    }
+
+    var knapp = document.getElementById('rett-lagre');
+    knapp.disabled = true;
+    knapp.textContent = 'Lagrer …';
+    rettMelding('');
+
+    Api.updateOkt(o.id, endring).then(function () {
+      lukkRett();
+      // Hent alt på nytt: rettingen flytter «forrige økt», utviklingskurven og
+      // gjengens tall på én gang.
+      return lastOkter().then(function () { kvittering('Økta er rettet opp.', false); });
+    }).catch(function (e) {
+      knapp.disabled = false;
+      knapp.textContent = 'Lagre endringer';
+      rettMelding(e.message || 'Kunne ikke lagre endringen.');
+    });
+  }
+
+  function slettOkt(o) {
+    if (!confirm('Sletter økta fra ' + datoTekst(o.dato) + '. Dette kan ikke angres.')) return;
+    var knapp = document.getElementById('rett-slett');
+    knapp.disabled = true;
+    knapp.textContent = 'Sletter …';
+    rettMelding('');
+
+    Api.deleteOkt(o.id).then(function () {
+      lukkRett();
+      return lastOkter().then(function () { kvittering('Økta er slettet.', false); });
+    }).catch(function (e) {
+      knapp.disabled = false;
+      knapp.textContent = 'Slett denne økta';
+      rettMelding(e.message || 'Kunne ikke slette økta.');
+    });
   }
 
   // ===== Programmet: utskrift og tekst =====
@@ -2439,6 +2767,10 @@
     document.addEventListener('keydown', function (e) {
       if (endringerErApne()) {
         if (e.key === 'Escape') lukkEndringer();
+        return;
+      }
+      if (rettErApen()) {
+        if (e.key === 'Escape') lukkRett();
         return;
       }
       if (!fokusErApen()) return;

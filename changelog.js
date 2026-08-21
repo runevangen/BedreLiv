@@ -15,6 +15,16 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.11",
+    "d": "august 2026",
+    "changes": [
+      "Trykk på en økt i loggen for å rette den opp. Der kan du endre vekt og reps på hver øvelse, flytte økta til riktig dag hvis du glemte å logge den, fjerne en øvelse ved å tømme begge feltene — eller slette hele økta. Før fantes bare «Tøm hele loggen», som er alt-eller-ingenting og ikke duger når ett tall ble feil.",
+      "Utviklingen, «forrige økt» og gjengens tall regnes om med én gang du lagrer. Retter du siste økt ned, snur kurven fra oppover til lettere på skjermen foran deg.",
+      "Endrer du tallene, forsvinner heiaropene på den økta. Et heiarop gjaldt løftene slik de sto, og skal ikke henge igjen på tall ingen har sett. Flytter du bare datoen, står de — da er løftene de samme. Dette er en bevisst endring fra v0.08, der heiaropene overlevde enhver retting.",
+      "En økt må ha minst ett løft. Tømmer du alle feltene, sier appen fra i stedet for å lagre en tom økt — vil du bli kvitt hele økta, sletter du den."
+    ]
+  },
+  {
     "v": "0.10",
     "d": "august 2026",
     "changes": [

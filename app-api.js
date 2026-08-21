@@ -114,6 +114,19 @@ var Api = (function () {
     });
   }
 
+  // Rett opp en økt. Bare eieren slipper til. Endres tallene, nullstiller
+  // serveren heiaropene på økta.
+  function updateOkt(id, endring) {
+    var data = { userId: currentUserId() };
+    if (endring.ovelser !== undefined) data.ovelser = endring.ovelser;
+    if (endring.dato !== undefined) data.dato = endring.dato;
+    return call('/api/okter/' + encodeURIComponent(id), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  }
+
   // Heia på en venns økt. Trykker du igjen, tas heiaropet bort — samme kall.
   // Serveren svarer med hele lista, så klienten slipper å gjette utfallet.
   function heiarop(oktId) {
@@ -143,6 +156,7 @@ var Api = (function () {
     listBrukere: listBrukere,
     listOkter: listOkter,
     saveOkt: saveOkt,
+    updateOkt: updateOkt,
     heiarop: heiarop,
     deleteOkt: deleteOkt
   };

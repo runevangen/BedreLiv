@@ -107,6 +107,21 @@ id — aldri PIN-hashen. Svikter kallet, faller gjengen tilbake på dem som har
 egen forrige økt i samme øvelse. Relativt framfor absolutt: ellers vinner den
 tyngste hver uke.
 
+### Rette opp og slette en økt
+
+Trykk på en økt i loggen. `#rett` åpner i fullskjerm med datoen og alle fem
+øvelsene, og lar deg endre tall, flytte dagen, fjerne en øvelse (tøm begge
+feltene) eller slette økta.
+
+Etter lagring kalles `lastOkter()` på nytt framfor å flikke på lokal tilstand.
+En retting flytter «forrige økt», utviklingskurven og gjengens tall samtidig —
+å oppdatere hver av dem for hånd ville vært tre steder å glemme.
+
+**Heiarop nullstilles når tallene endres.** `PATCH` sammenlikner de vaskede
+øvelsene med de lagrede, og tømmer `heiarop` bare når de faktisk er
+forskjellige. Et heiarop gjaldt løftene slik de sto. Flytter du bare datoen,
+står heiaropene.
+
 ### Heiarop
 
 👏 på en venns siste økt, med samme kall for å ta det bort igjen. Heiarop har
