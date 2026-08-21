@@ -796,7 +796,7 @@
      For telefonen satt fra deg mellom settene — store tall, store knapper,
      og skjermen holdes våken så den ikke sovner midt i en runde. */
   /* Hvilken dag økta føres på. Står øverst, over øvelsene, så det aldri er
-     tvil — og lar en glemt økt føres uten å gå veien om «rett opp». */
+     tvil — og lar en glemt økt føres uten å gå veien om «Endre». */
   .okt-dag {
     display: flex;
     align-items: center;
@@ -1062,7 +1062,7 @@
   .fokus-fram { flex: 1; border: none; background: var(--verdigris); color: #FFFFFF; }
   .fokus-fram:disabled { background: var(--etch); color: var(--dust); cursor: default; }
 
-  /* ===== Rett opp en økt ===== */
+  /* ===== Endre en økt ===== */
   #rett {
     position: fixed;
     inset: 0;
@@ -1417,7 +1417,7 @@
   var brukere = [];     // alle registrerte, også de som ikke har trent ennå
   var utkast = {};
   // Hvilken dag økta føres på. null = i dag. Å kunne velge dagen her er det
-  // som gjør at en glemt økt ikke må gå veien om «rett opp» på en gammel dag.
+  // som gjør at en glemt økt ikke må gå veien om «Endre» på en gammel dag.
   var oktDato = null;
   var portModus = 'inn'; // 'inn' | 'ny'
 
@@ -1555,9 +1555,9 @@
       for (var j = okter.length - 1; j >= 0; j--) {
         var o = okter[j];
         h += '<button type="button" class="okt okt-knapp" data-rett="' + o.id +
-             '" aria-label="Rett opp økta fra ' + datoTekst(o.dato) + '">' +
+             '" aria-label="Endre økta fra ' + datoTekst(o.dato) + '">' +
              '<div class="okt-dato">' + datoTekst(o.dato) +
-             '<span class="okt-rett">rett opp</span></div><div class="okt-tall">';
+             '<span class="okt-rett">endre</span></div><div class="okt-tall">';
         OVELSER.forEach(function (ov) {
           var b = besteRunde(o, ov.id);
           if (b) h += '<span>' + ov.kort + ' ' + b.vekt + '×' + b.reps + '</span>';
@@ -1849,7 +1849,7 @@
       '</div>' + rader;
   }
 
-  // ===== Rett opp eller slett én økt =====
+  // ===== Endre eller slett én økt =====
   // Backenden har alltid kunnet begge deler; det var grensesnittet som manglet.
   // «Tøm hele loggen» er alt-eller-ingenting og duger ikke når ett tall ble feil.
   var rettId = null;
@@ -1886,7 +1886,7 @@
     var antallHeia = Array.isArray(o.heiarop) ? o.heiarop.length : 0;
 
     var h = '<div class="rett-topp">' +
-      '<span class="rett-tittel">Rett opp økta</span>' +
+      '<span class="rett-tittel">Endre økta</span>' +
       '<button class="endr-x" id="rett-lukk" aria-label="Lukk uten å lagre">✕</button></div>';
 
     h += '<div class="rett-rull">';
@@ -1974,7 +1974,7 @@
       lukkRett();
       // Hent alt på nytt: rettingen flytter «forrige økt», utviklingskurven og
       // gjengens tall på én gang.
-      return lastOkter().then(function () { kvittering('Økta er rettet opp.', false); });
+      return lastOkter().then(function () { kvittering('Økta er endret.', false); });
     }).catch(function (e) {
       knapp.disabled = false;
       knapp.textContent = 'Lagre endringer';

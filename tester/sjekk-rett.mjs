@@ -33,7 +33,7 @@ const pKari = await lag('Kari','2222', [[{ 'knebøy':{vekt:12,reps:10} }, '2026-
 
 console.log('--- Inngangen ---');
 sjekk('øktene i loggen er trykkbare', (await pRune.locator('.okt-knapp').count()) === 3);
-sjekk('det står «rett opp» på dem', (await pRune.locator('.okt-rett').first().textContent()) === 'rett opp');
+sjekk('det står «endre» på dem', (await pRune.locator('.okt-rett').first().textContent()) === 'endre');
 sjekk('rettevinduet er lukket', !(await pRune.locator('#rett').isVisible()));
 
 console.log('--- Åpne og lese ---');
@@ -57,7 +57,7 @@ await pRune.fill('#rv-knebøy-0','14');
 await pRune.locator('#rett-lagre').click();
 await pRune.waitForTimeout(1200);
 sjekk('vinduet lukkes etter lagring', !(await pRune.locator('#rett').isVisible()));
-sjekk('kvittering i loggen', (await pRune.locator('#kvittering').textContent()).includes('rettet opp'),
+sjekk('kvittering i loggen', (await pRune.locator('#kvittering').textContent()).includes('endret'),
   (await pRune.locator('#kvittering').textContent()).trim());
 sjekk('etter retting: lettere', (await retning()).includes('Lettere'), await retning());
 sjekk('loggen viser det nye tallet', (await pRune.locator('.okt-knapp').first().textContent()).includes('Knebøy 14×10'));

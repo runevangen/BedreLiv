@@ -15,6 +15,13 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.15",
+    "d": "august 2026",
+    "changes": [
+      "«Rett opp» heter nå «Endre» — på knappen i loggen, i overskriften på skjermen som åpner seg, og i kvitteringen etterpå."
+    ]
+  },
+  {
     "v": "0.14",
     "d": "august 2026",
     "changes": [
@@ -29,7 +36,7 @@ const CHANGELOG = [
     "changes": [
       "Fyller du inn runde én, fylles de andre rundene med det samme. Er de like — som de som regel er — er du ferdig etter to tall. Retter du siste runde ned fordi forma sviktet, blir den rettingen stående, også om du etterpå endrer runde én. Merkingen er per felt, ikke per runde: retter du reps i siste runde, følger vekta der fortsatt runde én, for den har du ikke rørt.",
       "Øverst står det nå «Økt for» med dagen skrevet ut, og lagreknappen sier hvilken dag den skriver til. Før sto datoen bare løst i hjørnet uten å si hva den gjaldt.",
-      "Du kan velge dagen når du lagrer. Glemte du å føre inn onsdagens økt, setter du datoen og lagrer — uten å måtte gå veien om «rett opp» på en gammel økt, som er nettopp den veien som gjør at dagens tall kan havne på feil dag."
+      "Du kan velge dagen når du lagrer. Glemte du å føre inn onsdagens økt, setter du datoen og lagrer — uten å måtte gå veien om «Endre» på en gammel økt, som er nettopp den veien som gjør at dagens tall kan havne på feil dag."
     ]
   },
   {
@@ -46,7 +53,7 @@ const CHANGELOG = [
     "v": "0.11",
     "d": "august 2026",
     "changes": [
-      "Trykk på en økt i loggen for å rette den opp. Der kan du endre vekt og reps på hver øvelse, flytte økta til riktig dag hvis du glemte å logge den, fjerne en øvelse ved å tømme begge feltene — eller slette hele økta. Før fantes bare «Tøm hele loggen», som er alt-eller-ingenting og ikke duger når ett tall ble feil.",
+      "Trykk på en økt i loggen for å endre den. Der kan du endre vekt og reps på hver øvelse, flytte økta til riktig dag hvis du glemte å logge den, fjerne en øvelse ved å tømme begge feltene — eller slette hele økta. Før fantes bare «Tøm hele loggen», som er alt-eller-ingenting og ikke duger når ett tall ble feil.",
       "Utviklingen, «forrige økt» og gjengens tall regnes om med én gang du lagrer. Retter du siste økt ned, snur kurven fra oppover til lettere på skjermen foran deg.",
       "Endrer du tallene, forsvinner heiaropene på den økta. Et heiarop gjaldt løftene slik de sto, og skal ikke henge igjen på tall ingen har sett. Flytter du bare datoen, står de — da er løftene de samme. Dette er en bevisst endring fra v0.08, der heiaropene overlevde enhver retting.",
       "En økt må ha minst ett løft. Tømmer du alle feltene, sier appen fra i stedet for å lagre en tom økt — vil du bli kvitt hele økta, sletter du den."
