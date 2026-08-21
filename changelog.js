@@ -15,6 +15,15 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.17",
+    "d": "august 2026",
+    "changes": [
+      "Tekststørrelse-velgeren har fått et trinn til på toppen, og det minste trinnet er borte. Valgene er nå normal, stor, større og størst, der størst er tydelig større enn det som fantes før. Har du tidligere valgt det minste trinnet, står appen på normal neste gang du åpner den.",
+      "Fokus bruker alltid største tekst, uansett hva du har valgt ellers. Telefonen ligger gjerne et stykke unna på gulvet mens du trener, og da skal vekt, repetisjoner og øvelsesnavn kunne leses derfra. Valget ditt røres ikke — det er tilbake så snart du lukker fokus.",
+      "Telleren øverst i fokus er kortet ned til «Runde 1/3 · Øvelse 1/5». Med største tekst brakk den gamle skrivemåten i to linjer på en liten skjerm og dyttet lukkeknappen ned."
+    ]
+  },
+  {
     "v": "0.16",
     "d": "august 2026",
     "changes": [

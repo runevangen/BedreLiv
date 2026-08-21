@@ -37,41 +37,49 @@ console.log('--- Tekststørrelse ---');
 const les = () => p.locator('.masthead h1').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
 const normal = await les();
 sjekk('velgeren finnes', await p.locator('#tekststorrelse').isVisible());
+sjekk('fire trinn', (await p.locator('#tekststorrelse button').count()) === 4);
+sjekk('ingen «liten» lenger', (await p.locator('#tekststorrelse button[data-skala="liten"]').count()) === 0);
 sjekk('«normal» er valgt fra start', await p.locator('#tekststorrelse button[data-skala="normal"]').evaluate(el => el.classList.contains('valgt')));
+const trinn = [];
+for (const navn of ['normal', 'stor', 'storre', 'storst']) {
+  await p.locator(`#tekststorrelse button[data-skala="${navn}"]`).click();
+  await p.waitForTimeout(120);
+  trinn.push(await les());
+}
+sjekk('trinnene vokser hele veien', trinn.every((v, i) => i === 0 || v > trinn[i-1]), trinn.map(Math.round).join(' → '));
+sjekk('største trinn er halvannen gang normal', Math.abs(trinn[3] / trinn[0] - 1.5) < 0.02,
+  (trinn[3]/trinn[0]).toFixed(2) + '×');
 await p.locator('#tekststorrelse button[data-skala="storst"]').click(); await p.waitForTimeout(150);
-const storst = await les();
-sjekk('størst gjør teksten større', storst > normal, Math.round(normal)+' → '+Math.round(storst)+'px');
-await p.locator('#tekststorrelse button[data-skala="liten"]').click(); await p.waitForTimeout(150);
-const liten = await les();
-sjekk('liten gjør teksten mindre', liten < normal, Math.round(normal)+' → '+Math.round(liten)+'px');
+const storst = trinn[3];
+const liten = trinn[0];
 const feltStr = await p.locator('#v-knebøy-0').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
 sjekk('tallfeltene holder seg over 16px (ingen iOS-zoom)', feltStr >= 16, feltStr+'px');
 const knappStr = await p.locator('#tekststorrelse button[data-skala="normal"]').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
-sjekk('selve velgeren skalerer ikke seg selv', knappStr === 13, knappStr+'px');
+sjekk('selve velgeren skalerer ikke seg selv', knappStr === 12, knappStr+'px');
 await p.reload(); await p.waitForSelector('#innhold:not([hidden])'); await p.waitForFunction(() => { const e = document.querySelector('#innhold'); return e && !e.classList.contains('laster'); });
-sjekk('valget huskes etter refresh', (await les()) === liten);
-sjekk('riktig knapp er markert etter refresh', await p.locator('#tekststorrelse button[data-skala="liten"]').evaluate(el => el.classList.contains('valgt')));
+sjekk('valget huskes etter refresh', (await les()) === storst);
+sjekk('riktig knapp er markert etter refresh', await p.locator('#tekststorrelse button[data-skala="storst"]').evaluate(el => el.classList.contains('valgt')));
 await p.locator('#tekststorrelse button[data-skala="normal"]').click(); await p.waitForTimeout(150);
 
 console.log('--- Runder i fokus ---');
 await p.locator('#fokus-start').click(); await p.waitForTimeout(250);
-sjekk('teller viser runde og øvelse', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 1 av 3 · Øvelse 1 av 5');
+sjekk('teller viser runde og øvelse', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 1/3 · Øvelse 1/5');
 sjekk('femten prikker', (await p.locator('.prikk').count()) === 15);
 sjekk('tre grupper', (await p.locator('.rundegruppe').count()) === 3);
 sjekk('første prikk er markert som nå', await p.locator('.prikk').first().evaluate(el => el.classList.contains('na')));
 // Bla gjennom runde 1
 for (let i=0;i<4;i++){ await p.locator('#fokus-fram').click(); await p.waitForTimeout(80); }
-sjekk('siste øvelse i runde 1', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 1 av 3 · Øvelse 5 av 5');
+sjekk('siste øvelse i runde 1', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 1/3 · Øvelse 5/5');
 sjekk('framknappen sier fortsatt Neste', (await p.locator('#fokus-fram').textContent()).includes('Neste'));
 await p.locator('#fokus-fram').click(); await p.waitForTimeout(120);
-sjekk('går videre til runde 2, øvelse 1', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 2 av 3 · Øvelse 1 av 5');
+sjekk('går videre til runde 2, øvelse 1', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 2/3 · Øvelse 1/5');
 sjekk('fem prikker er nå gjort', (await p.locator('.prikk.gjort').count()) === 5);
 // Hopp med prikk
 await p.locator('.prikk').nth(12).click(); await p.waitForTimeout(120);
-sjekk('prikk hopper til runde 3', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 3 av 3 · Øvelse 3 av 5');
+sjekk('prikk hopper til runde 3', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 3/3 · Øvelse 3/5');
 // Til siste steg
 await p.locator('.prikk').nth(14).click(); await p.waitForTimeout(120);
-sjekk('siste steg i sirkelen', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 3 av 3 · Øvelse 5 av 5');
+sjekk('siste steg i sirkelen', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').trim() === 'Runde 3/3 · Øvelse 5/5');
 sjekk('framknappen sier Lagre økta', (await p.locator('#fokus-fram').textContent()).includes('Lagre'));
 
 console.log('--- Tall på tvers av runder ---');

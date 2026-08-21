@@ -29,9 +29,9 @@
     --dust-sterk: #5C666D;
   }
 
-  html[data-skala="liten"]  { --skala: 0.92; }
   html[data-skala="stor"]   { --skala: 1.14; }
-  html[data-skala="storst"] { --skala: 1.3; }
+  html[data-skala="storre"] { --skala: 1.3; }
+  html[data-skala="storst"] { --skala: 1.5; }
 
   * { box-sizing: border-box; }
 
@@ -119,10 +119,10 @@
     border-radius: 2px;
     cursor: pointer;
   }
-  .tekststorrelse button:nth-child(1) { font-size: 11px; }
-  .tekststorrelse button:nth-child(2) { font-size: 13px; }
-  .tekststorrelse button:nth-child(3) { font-size: 15px; }
-  .tekststorrelse button:nth-child(4) { font-size: 17px; }
+  .tekststorrelse button:nth-child(1) { font-size: 12px; }
+  .tekststorrelse button:nth-child(2) { font-size: 14px; }
+  .tekststorrelse button:nth-child(3) { font-size: 16px; }
+  .tekststorrelse button:nth-child(4) { font-size: 18px; }
   .tekststorrelse button.valgt {
     border-color: var(--verdigris);
     color: var(--verdigris);
@@ -885,6 +885,9 @@
     justify-content: space-between;
     padding: 14px 16px 0;
   }
+  /* Telleren er metadata, ikke innhold — den skal aldri brekke i to linjer
+     og dytte lukkeknappen ned. Derfor nowrap og litt slakkere sperring når
+     teksten er skrudd opp. */
   .fokus-teller {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: calc(12.5px * var(--skala));
@@ -892,7 +895,10 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--dust);
+    white-space: nowrap;
   }
+  html[data-skala="storre"] .fokus-teller,
+  html[data-skala="storst"] .fokus-teller { letter-spacing: 0.08em; }
   .fokus-x {
     width: 34px;
     height: 34px;
@@ -1304,9 +1310,9 @@
     <div class="bruker" id="bruker" hidden>
       <span>Innlogget som <b id="bruker-navn"></b></span>
       <span class="tekststorrelse" id="tekststorrelse" role="group" aria-label="Tekststørrelse">
-        <button type="button" data-skala="liten" title="Minst tekst" aria-label="Minst tekst">A</button>
         <button type="button" data-skala="normal" title="Vanlig tekst" aria-label="Vanlig tekst">A</button>
-        <button type="button" data-skala="stor" title="Større tekst" aria-label="Større tekst">A</button>
+        <button type="button" data-skala="stor" title="Stor tekst" aria-label="Stor tekst">A</button>
+        <button type="button" data-skala="storre" title="Større tekst" aria-label="Større tekst">A</button>
         <button type="button" data-skala="storst" title="Størst tekst" aria-label="Størst tekst">A</button>
       </span>
       <button type="button" class="lenke" id="logg-ut">Logg ut</button>
@@ -2511,7 +2517,7 @@
   // Settes som data-skala på <html>, som all font-size regner ut fra. Valget
   // huskes lokalt — det er en egenskap ved telefonen din, ikke ved kontoen.
   var SKALA_KEY = 'bedrelivTekst';
-  var SKALAER = ['liten', 'normal', 'stor', 'storst'];
+  var SKALAER = ['normal', 'stor', 'storre', 'storst'];
 
   function settTekstStorrelse(navn, lagre) {
     if (SKALAER.indexOf(navn) < 0) navn = 'normal';
@@ -2586,6 +2592,10 @@
     document.getElementById('fokus').classList.add('apen');
     document.getElementById('fokus').setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    // Telefonen ligger ofte et stykke unna mens du trener, så fokus bruker
+    // største trinn uansett hva som er valgt ellers. Valget ditt røres ikke —
+    // det leses tilbake når fokus lukkes.
+    document.documentElement.setAttribute('data-skala', 'storst');
     taWakeLock();
     tegnFokus();
   }
@@ -2594,6 +2604,7 @@
     document.getElementById('fokus').classList.remove('apen');
     document.getElementById('fokus').setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    settTekstStorrelse(lagretTekstStorrelse(), false);   // tilbake til ditt valg
     slippWakeLock();
     // Tallene du skrev i fokus skal stå i lista bak når du kommer tilbake.
     if (!stille) tegn();
@@ -2614,8 +2625,8 @@
 
     var h = '';
     h += '<div class="fokus-topp">';
-    h += '  <span class="fokus-teller">Runde ' + (fokusRunde() + 1) + ' av ' + RUNDER +
-         ' <em>·</em> Øvelse ' + (fokusIdx() + 1) + ' av ' + OVELSER.length + '</span>';
+    h += '  <span class="fokus-teller">Runde ' + (fokusRunde() + 1) + '/' + RUNDER +
+         ' <em>·</em> Øvelse ' + (fokusIdx() + 1) + '/' + OVELSER.length + '</span>';
     h += '  <button class="fokus-x" id="fokus-lukk" aria-label="Lukk fokus">✕</button>';
     h += '</div>';
     h += '<div class="fokus-strek"><i style="width:' + andel + '%"></i></div>';

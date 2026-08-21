@@ -25,7 +25,7 @@ sjekk('fokus er lukket til å begynne med', !(await p.locator('#fokus').isVisibl
 await p.locator('#fokus-start').click();
 await p.waitForTimeout(250);
 sjekk('fokus åpner i fullskjerm', await p.locator('#fokus').isVisible());
-sjekk('starter på runde 1, øvelse 1', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 1 av 5'));
+sjekk('starter på runde 1, øvelse 1', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 1/5'));
 sjekk('viser øvelsesnavnet stort', (await p.locator('.fokus-navn').textContent()) === 'Goblet knebøy');
 sjekk('viser mål og antall manualer', (await p.locator('.fokus-maal').textContent()).includes('10 reps') && (await p.locator('.fokus-maal').textContent()).includes('1 manual'));
 sjekk('to store figurer', (await p.locator('.fokus-figurer svg.fig').count()) === 2);
@@ -39,26 +39,26 @@ sjekk('vektfeltet er stort nok for tommelen', boks.height >= 55, Math.round(boks
 await p.fill('#fv','24'); await p.fill('#fr','10');
 await p.locator('#fokus-fram').click();
 await p.waitForTimeout(200);
-sjekk('blar til øvelse 2', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 2 av 5'));
+sjekk('blar til øvelse 2', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 2/5'));
 sjekk('øvelse 2 er pressen', (await p.locator('.fokus-navn').textContent()) === 'Manualpress stående');
 sjekk('to manualer vises for pressen', (await p.locator('.fokus-maal').textContent()).includes('2 manualer'));
 sjekk('forrige-knappen er på nå', !(await p.locator('#fokus-tilbake').isDisabled()));
 
 await p.locator('#fokus-tilbake').click();
 await p.waitForTimeout(200);
-sjekk('blar tilbake til øvelse 1', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 1 av 5'));
+sjekk('blar tilbake til øvelse 1', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 1/5'));
 sjekk('tallene står igjen når du blar tilbake', (await p.inputValue('#fv')) === '24' && (await p.inputValue('#fr')) === '10');
 
 // Piltaster
 await p.locator('.fokus-navn').click();
 await p.keyboard.press('ArrowRight');
 await p.waitForTimeout(150);
-sjekk('høyrepil blar fram', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 2 av 5'));
+sjekk('høyrepil blar fram', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 2/5'));
 // Piltast i tallfeltet skal IKKE bla
 await p.locator('#fv').click();
 await p.keyboard.press('ArrowRight');
 await p.waitForTimeout(150);
-sjekk('pil i tallfeltet blar ikke', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 2 av 5'));
+sjekk('pil i tallfeltet blar ikke', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 2/5'));
 
 // Lukk med Escape, sjekk at tallene havnet i lista
 await p.keyboard.press('Escape');
@@ -71,11 +71,11 @@ sjekk('lagreknappen er slått på av fokus-utkastet', !(await p.locator('#lagre'
 await p.fill('#v-press-0','16'); await p.fill('#r-press-0','8');
 await p.locator('#fokus-start').click();
 await p.waitForTimeout(250);
-sjekk('gjenåpning fortsetter der du slapp', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 2 av 5'));
+sjekk('gjenåpning fortsetter der du slapp', (await p.locator('.fokus-teller').textContent()).includes('Øvelse 2/5'));
 
 // Hopp til siste steg i sirkelen og lagre derfra
 await p.locator('.prikk').nth(14).click(); await p.waitForTimeout(150);
-sjekk('siste steg i sirkelen nådd', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').includes('Runde 3 av 3 · Øvelse 5 av 5'));
+sjekk('siste steg i sirkelen nådd', (await p.locator('.fokus-teller').textContent()).replace(/\s+/g,' ').includes('Runde 3/3 · Øvelse 5/5'));
 sjekk('framknappen sier Lagre økta', (await p.locator('#fokus-fram').textContent()).includes('Lagre'));
 await p.locator('#fokus-fram').click();
 await p.waitForFunction(() => document.querySelector('#antall') && document.querySelector('#antall').textContent === '1', null, { timeout: 5000 });
