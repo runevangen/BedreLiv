@@ -1372,6 +1372,7 @@
   <div class="endr-rull" id="endr-body"></div>
 </div>
 
+<script src="beregning.js"></script>
 <script src="changelog.js"></script>
 <script src="app-api.js"></script>
 <script src="figurer.js"></script>
@@ -1420,28 +1421,21 @@
   var oktDato = null;
   var portModus = 'inn'; // 'inn' | 'ny'
 
-  function volum(v, r) { return (v || 0) * (r || 0); }
-
-  // Én øvelse i en økt er en liste med én post per runde. Økter lagret før
-  // runder ble loggført har ett enkelt {vekt,reps} — de leses som én runde,
-  // så gamle tall aldri forsvinner ut av loggen.
-  function runderFor(okt, id) {
-    var e = okt && okt.ovelser ? okt.ovelser[id] : null;
-    if (!e) return [];
-    if (Array.isArray(e)) return e.filter(function (r) { return r && r.vekt && r.reps; });
-    return (e.vekt && e.reps) ? [e] : [];
-  }
-
-  // Alt som sammenliknes — «forrige økt», utviklingen, gjengen, Ukas løft —
-  // går på den TYNGSTE runden, ikke summen. Summen ville falt bare fordi du
-  // rakk to runder i stedet for tre, og kalt en god dag et tilbakesteg.
-  function besteRunde(okt, id) {
-    var beste = null;
-    runderFor(okt, id).forEach(function (r) {
-      if (!beste || volum(r.vekt, r.reps) > volum(beste.vekt, beste.reps)) beste = r;
-    });
-    return beste;
-  }
+  // Regnestykkene bor i beregning.js, så de kan testes på millisekunder i Node
+  // i stedet for gjennom en nettleser. Navnene beholdes her, så kallstedene
+  // leser som før.
+  var volum = Beregning.volum;
+  var runderFor = Beregning.runderFor;
+  var besteRunde = Beregning.besteRunde;
+  var volumSerieFra = Beregning.volumSerieFra;
+  var trend = Beregning.trend;
+  var ukeStart = Beregning.ukeStart;
+  var ukeNokkel = Beregning.ukeNokkel;
+  var forrigeUke = Beregning.forrigeUke;
+  var toSiffer = Beregning.toSiffer;
+  var datoFeltVerdi = Beregning.datoFeltVerdi;
+  var datoTekst = Beregning.datoTekst;
+  var RORT = Beregning.RORT;
 
   // Loggen ligger eldst først, så bakoverløkka finner siste økt med et løft.
   function sisteFor(id) {
@@ -1452,12 +1446,6 @@
     return null;
   }
 
-  function datoTekst(iso) {
-    var d = new Date(iso);
-    var dager = ['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'];
-    var mnd = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
-    return dager[d.getDay()] + ' ' + d.getDate() + '. ' + mnd[d.getMonth()];
-  }
 
   // Teksten kommer fra brukeren (navn) og fra serverens feilmeldinger, så den
   // må aldri tolkes som markup når den settes inn i en innerHTML-streng.
@@ -1707,20 +1695,7 @@
   // reps fordi forma sviktet, skal vekta der fortsatt følge runde én: den har
   // du ikke rørt. Merket vi hele runden, ville ett rettet tall frosset det
   // andre også.
-  var RORT = { vekt: 'rortVekt', reps: 'rortReps' };
-
-  function spreFraForste(id) {
-    var liste = utkastRunder(id);
-    var forste = liste[0];
-    if (!forste) return;
-    for (var r = 1; r < RUNDER; r++) {
-      if (!liste[r]) liste[r] = {};
-      ['vekt', 'reps'].forEach(function (felt) {
-        if (liste[r][RORT[felt]]) return;
-        if (forste[felt] != null) liste[r][felt] = forste[felt];
-      });
-    }
-  }
+  function spreFraForste(id) { Beregning.spreRunder(utkastRunder(id), RUNDER); }
 
   // Skriver et felt og forplanter fra runde én. Returnerer true når andre
   // runder ble endret, så den som kaller vet at feltene må speiles.
@@ -1777,48 +1752,10 @@
   }
 
   // ===== Utvikling over tid =====
-  // Trenden regnes på volum (vekt × reps) per øvelse. Volum framfor vekt alene,
-  // fordi én rep mer er reell framgang selv om manualen er den samme.
-  var TREND_OKTER = 6;
-
+  // Trenden regnes på volum (vekt × reps) per øvelse — se beregning.js. Volum
+  // framfor vekt alene, fordi én rep mer er reell framgang selv med samme manual.
   function volumSerie(id) { return volumSerieFra(okter, id); }
 
-  function volumSerieFra(liste, id) {
-    var ut = [];
-    liste.forEach(function (o) {
-      var b = besteRunde(o, id);
-      if (b) ut.push({ volum: volum(b.vekt, b.reps), vekt: b.vekt, reps: b.reps });
-    });
-    return ut;
-  }
-
-  // Minste kvadraters stigningstall over de siste øktene, delt på snittvolumet.
-  // Normaliseringen gjør at en tung øvelse ikke automatisk får en brattere
-  // «trend» enn en lett — det er den relative endringen som betyr noe.
-  function trend(serie) {
-    if (serie.length < 2) return null;
-    var v = serie.slice(-TREND_OKTER);
-    var n = v.length;
-    var snittX = (n - 1) / 2;
-    var snittY = 0;
-    for (var i = 0; i < n; i++) snittY += v[i].volum;
-    snittY /= n;
-    if (!snittY) return null;
-
-    var teller = 0, nevner = 0;
-    for (i = 0; i < n; i++) {
-      teller += (i - snittX) * (v[i].volum - snittY);
-      nevner += (i - snittX) * (i - snittX);
-    }
-    if (!nevner) return null;
-
-    var pst = (teller / nevner) / snittY;   // endring per økt, som andel av snittet
-    return {
-      pst: pst,
-      retning: pst > 0.02 ? 'opp' : pst < -0.02 ? 'lettere' : 'likt',
-      serie: v
-    };
-  }
 
   // Sparkline: linja i tilbaketrukket grått, siste økt som farget punkt.
   // Fargen er aldri eneste kanal — ordet og pila ved siden av sier det samme.
@@ -1921,14 +1858,7 @@
     return document.getElementById('rett').classList.contains('apen');
   }
 
-  function toSiffer(n) { return (n < 10 ? '0' : '') + n; }
 
-  // <input type="date"> vil ha ÅÅÅÅ-MM-DD i LOKAL tid. Bruker man toISOString()
-  // her, kan datoen hoppe en dag for den som er øst for Greenwich om kvelden.
-  function datoFeltVerdi(iso) {
-    var d = new Date(iso);
-    return d.getFullYear() + '-' + toSiffer(d.getMonth() + 1) + '-' + toSiffer(d.getDate());
-  }
 
   function finnOkt(id) {
     for (var i = 0; i < okter.length; i++) if (okter[i].id === id) return okter[i];
@@ -2178,47 +2108,16 @@
     try { localStorage.setItem(SKJULTE_KEY, JSON.stringify(liste)); } catch (e) {}
   }
 
-  // Uker går fra mandag. Nøkkelen er selve mandagsdatoen, ikke et regnestykke
-  // på millisekunder — sommertid flytter døgn med en time, og et uketall
-  // regnet ut av differanser kan da havne i feil uke.
-  function ukeStart(d) {
-    var x = new Date(d);
-    x.setHours(0, 0, 0, 0);
-    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
-    return x;
-  }
-  function ukeNokkel(d) { return ukeStart(d).toDateString(); }
-  function forrigeUke(d) { return ukeStart(new Date(ukeStart(d).getTime() - 7 * 86400000)); }
 
   // Uker på rad med minst to økter. Inneværende uke er ennå ikke over, så den
   // bryter aldri rekka — er den ikke fylt opp, telles det fra forrige uke.
-  function ukerPaaRad(dater) {
-    var teller = {};
-    dater.forEach(function (d) {
-      var k = ukeNokkel(d);
-      teller[k] = (teller[k] || 0) + 1;
-    });
-    var uke = ukeStart(new Date());
-    if ((teller[ukeNokkel(uke)] || 0) < MAL_PER_UKE) uke = forrigeUke(uke);
-    var n = 0;
-    while ((teller[ukeNokkel(uke)] || 0) >= MAL_PER_UKE) {
-      n++;
-      uke = forrigeUke(uke);
-    }
-    return n;
-  }
+  function ukerPaaRad(dater) { return Beregning.ukerPaaRad(dater, MAL_PER_UKE); }
 
   // Retningen til én person: samme øvelsesvise trend som din egen utvikling,
   // og så flertallet. Totalvolum per økt ville vært misvisende — en økt der du
   // rakk to øvelser ville sett ut som et fall.
   function personRetning(egneOkter) {
-    var tell = { opp: 0, likt: 0, lettere: 0 };
-    OVELSER.forEach(function (ov) {
-      var t = trend(volumSerieFra(egneOkter, ov.id));
-      if (t) tell[t.retning]++;
-    });
-    if (!tell.opp && !tell.likt && !tell.lettere) return null;
-    return tell.opp > tell.lettere ? 'opp' : tell.lettere > tell.opp ? 'lettere' : 'likt';
+    return Beregning.personRetning(egneOkter, OVELSER.map(function (ov) { return ov.id; }));
   }
 
   function grupperPerPerson() {

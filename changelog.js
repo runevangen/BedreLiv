@@ -15,6 +15,15 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.14",
+    "d": "august 2026",
+    "changes": [
+      "Ingen synlig endring — opprydding i hvordan appen bygges og prøves. Regnestykkene (beste runde, trend, uker på rad, utfylling av runder) er flyttet ut av index.html til beregning.js: rene funksjoner uten skjerm og nettverk. De har fått 38 egne tester som kjører på 54 millisekunder, mot minutter da de samme reglene måtte prøves gjennom en nettleser.",
+      "Målt effekt: en full testrunde tok åtte minutter og tar nå under tre. Settene kjører fire om gangen med tregeste først, i stedet for etter hverandre.",
+      "Testene lå til nå bare i en midlertidig arbeidsmappe. 374 sjekker som ville forsvunnet med maskinen ligger nå i repoet."
+    ]
+  },
+  {
     "v": "0.13",
     "d": "august 2026",
     "changes": [

@@ -1,6 +1,6 @@
 # Backlog — Bedreliv
 
-Sist oppdatert: 21.08.2026 · v0.12 i prod. Levert så langt: logg med PIN-innlogging
+Sist oppdatert: 21.08.2026 · v0.14 i prod. Levert så langt: logg med PIN-innlogging
 og backend (0.01), strekfigurer og programtekst (0.02), fokus i fullskjerm (0.03),
 runder/sveip/tekststørrelse (0.04), utvikling over tid (0.05), versjonslogg (0.06),
 Gjengen (0.07), heiarop (0.08). 213 sjekker i sju testsett.
@@ -12,9 +12,15 @@ Gjengen (0.07), heiarop (0.08). 213 sjekker i sju testsett.
 Punktene er sortert omtrent synkende etter viktighet. Hvert punkt har en
 **I klartekst**-linje som sier hva det er og hvor stort, i vanlig språk.
 
-Disiplin: testsettene ligger utenfor repoet, i arbeidsmappa til økta. De kjøres
-mot en lokal etterlikning av Netlify Blobs. Endrer du noe som flytter et tall
-eller en tekst en test sjekker, oppdater testen bevisst — ikke stille.
+Disiplin: `npm test` kjører alt — 38 enhetssjekker på millisekunder, så 336
+nettlesersjekker parallelt på under tre minutter. Rører du bare regnestykkene,
+holder `npm run test:enhet`. Endrer du noe som flytter et tall eller en tekst en
+test sjekker, oppdater testen bevisst — ikke stille.
+
+Der de to tunge settene (`sjekk-rett`, `sjekk-heiarop`) bruker over to minutter
+hver, ligger det mer å hente: de laster siden på nytt mange ganger der de kunne
+kalt API-et direkte. Ikke gjort — utbyttet står ikke i forhold til arbeidet
+ennå.
 
 ---
 

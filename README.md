@@ -10,7 +10,8 @@ database å drifte.
 ## Struktur
 
 ```
-index.html                    hele appen — innlogging, skjema og logg
+index.html                    grensesnittet — skjema, logg, fokus, gjengen
+beregning.js                  regnestykkene, rene funksjoner uten DOM
 changelog.js                  endringsloggen (ren data, nyeste først)
 BACKLOG.md                    åpne punkter og avgjørelser som venter
 figurer.js                    strekfigurer for øvelsene (SVG, ingen bildefiler)
