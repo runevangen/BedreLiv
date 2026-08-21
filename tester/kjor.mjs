@@ -125,7 +125,9 @@ console.log('');
 if (feilet.length) {
   feilet.forEach((r) => {
     console.log(`===== ${r.fil} =====`);
-    console.log(r.ut.split('\n').filter((l) => /FEIL|Error|Timeout/.test(l)).slice(0, 12).join('\n'));
+    // Vis de faktiske sjekkene som feilet, ikke bare at noe gjorde det.
+    const linjer = r.ut.split('\n').filter((l) => /^ {2}FEIL |^ {3}- |Error|Timeout/.test(l));
+    console.log((linjer.length ? linjer : r.ut.split('\n').slice(-12)).slice(0, 12).join('\n'));
   });
   console.log(`\n${feilet.length} av ${sett.length} sett feilet. ${tid} s.`);
   process.exit(1);

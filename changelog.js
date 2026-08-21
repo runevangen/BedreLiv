@@ -19,7 +19,7 @@ const CHANGELOG = [
     "d": "august 2026",
     "changes": [
       "Ingen synlig endring — opprydding i hvordan appen bygges og prøves. Regnestykkene (beste runde, trend, uker på rad, utfylling av runder) er flyttet ut av index.html til beregning.js: rene funksjoner uten skjerm og nettverk. De har fått 38 egne tester som kjører på 54 millisekunder, mot minutter da de samme reglene måtte prøves gjennom en nettleser.",
-      "Målt effekt: en full testrunde tok åtte minutter og tar nå under tre. Settene kjører fire om gangen med tregeste først, i stedet for etter hverandre.",
+      "Målt effekt: en full testrunde tok åtte minutter og tar nå 18 sekunder. Mesteparten lå ett sted: fontlenka i toppen av siden går gjennom miljøets proxy og brukte 12,8 sekunder på å gi opp — ved hver eneste sidelasting, i hvert eneste sett. Testene svarer nå på den selv. Settene kjører dessuten fire om gangen, tregeste først.",
       "Testene lå til nå bare i en midlertidig arbeidsmappe. 374 sjekker som ville forsvunnet med maskinen ligger nå i repoet."
     ]
   },

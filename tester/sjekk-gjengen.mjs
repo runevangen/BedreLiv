@@ -8,9 +8,14 @@ const mandag = (uker) => { const d = new Date(); d.setHours(12,0,0,0);
   d.setDate(d.getDate() - ((d.getDay()+6)%7) - uker*7); return d; };
 const dag = (uker, n) => { const d = mandag(uker); d.setDate(d.getDate()+n); return d.toISOString(); };
 
-const b = await chromium.launch({ args: ['--host-resolver-rules=MAP fonts.googleapis.com 127.0.0.1, MAP fonts.gstatic.com 127.0.0.1'] });
+const b = await chromium.launch();
 const lagBruker = async (navn, pin, okter) => {
   const p = await b.newPage({ viewport:{width:390,height:844} });
+  // Fontlenka i <head> går gjennom miljøets proxy og bruker 12 sekunder på
+  // å gi opp. Vi svarer med et tomt stilark i stedet: da tar sidelastingen
+  // 0,1 sekund, og det oppstår ingen konsollfeil å måtte filtrere bort.
+  await p.route('**://fonts.googleapis.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
+  await p.route('**://fonts.gstatic.com/**', (r) => r.fulfill({ status: 200, contentType: 'font/woff2', body: '' }));
   p.on('pageerror', e => feil.push(navn+': JS-feil ' + e.message));
   await p.goto(B);
   await p.locator('#port-bytt').click();

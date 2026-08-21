@@ -3,8 +3,12 @@ const B = process.env.BASE;
 const feil = [];
 const sjekk = (n, ok, d) => { console.log((ok?'  OK   ':'  FEIL ')+n+(d?'  — '+d:'')); if(!ok) feil.push(n); };
 
-const b = await chromium.launch({ args: ['--host-resolver-rules=MAP fonts.googleapis.com 127.0.0.1, MAP fonts.gstatic.com 127.0.0.1'] });
+const b = await chromium.launch();
 const p = await b.newPage({ viewport:{width:390,height:844}, deviceScaleFactor:2, hasTouch:true });
+// Fontlenka i <head> går gjennom miljøets proxy og bruker 12 sekunder på
+// å gi opp. Avbrytes den her, tar sidelastingen 0,1 sekund i stedet.
+await p.route('**://fonts.googleapis.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
+await p.route('**://fonts.gstatic.com/**', (r) => r.fulfill({ status: 200, contentType: 'font/woff2', body: '' }));
 p.on('pageerror', e => feil.push('JS-feil: ' + e.message));
 p.on('console', m => { const t=m.text(); if(m.type()==='error' && !/ERR_CONNECTION_RESET|fonts\.g|401/.test(t)) feil.push('console: '+t); });
 
