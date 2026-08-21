@@ -102,6 +102,28 @@ sjekk('ensifret måned og dag får null foran', B.toSiffer(3), '03');
 sjekk('datoTekst skriver dag og måned', B.datoTekst(new Date('2026-08-21T12:00:00').toISOString()), 'Fredag 21. aug');
 sjekk('datoTekst på en søndag', B.datoTekst(new Date('2026-08-23T12:00:00').toISOString()), 'Søndag 23. aug');
 
+// ===== Stilarket: all tekst skal følge tekststørrelse-velgeren =====
+// Legger man til en CSS-blokk etter at skaleringen er innført, er det lett å
+// skrive «font-size: 12px» og glemme calc(). Da blir akkurat den delen stående
+// liten når noen velger større tekst — som skjedde med hele Utvikling-delen.
+{
+  const html = readFileSync(path.join(ROT, 'index.html'), 'utf8');
+  const css = html.slice(html.indexOf('<style>'), html.indexOf('</style>'));
+  // Velgeren skal ikke skalere seg selv: knappene ville flyttet seg under
+  // fingeren idet man trykker.
+  const unntak = /\.tekststorrelse button/;
+  let regel = '';
+  const uskalerte = [];
+  for (const linje of css.split('\n')) {
+    const m = linje.match(/^\s*([.#][\w-][^{]*)\{/);
+    if (m) regel = m[1].trim();
+    if (/font-size:\s*[\d.]+px/.test(linje) && !linje.includes('var(--skala)') && !unntak.test(regel)) {
+      uskalerte.push(regel);
+    }
+  }
+  sjekk('all tekst utenom selve velgeren skalerer', uskalerte, []);
+}
+
 console.log(`  ${ok} enhetssjekker`);
 if (feil.length) {
   console.log('\n  FEIL:');

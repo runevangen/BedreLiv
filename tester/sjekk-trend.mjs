@@ -52,8 +52,9 @@ console.log('--- Oppsummeringen ---');
 sjekk('overskriften er balansert (1 opp, 1 likt, 1 ned)', (await p.locator('.utv-overskrift').textContent()) === 'Du holder nivået');
 const sum = await p.locator('.utv-sum').textContent();
 sjekk('oppsummeringen teller riktig', sum.includes('1 øvelse går oppover') && sum.includes('1 ligger stabilt') && sum.includes('1 er lettere'), sum);
-const trost = await p.locator('.utv-trost').textContent();
-sjekk('den vennlige linja står der', trost.includes('ikke et tilbakesteg') && trost.includes('ikke en dom'), '');
+sjekk('ingen formanende tekst i boksen', (await p.locator('.utv-trost').count()) === 0);
+sjekk('boksen er overskrift og oppsummering, ikke mer',
+  (await p.locator('.utv-topp p').count()) === 2, (await p.locator('.utv-topp p').count()) + ' avsnitt');
 
 console.log('--- Sparkline ---');
 sjekk('én sparkline per rad', (await p.locator('svg.spark').count()) === 3);
@@ -96,7 +97,7 @@ await p.evaluate(async () => {
 });
 await p.reload(); await p.waitForSelector('#innhold:not([hidden])'); await p.waitForFunction(() => { const e = document.querySelector('#innhold'); return e && !e.classList.contains('laster'); });
 sjekk('overskriften snur til oppover', (await p.locator('.utv-overskrift').textContent()) === 'Det går oppover');
-sjekk('den vennlige linja står der uansett', (await p.locator('.utv-trost').count()) === 1);
+sjekk('fortsatt ingen formanende tekst', (await p.locator('.utv-trost').count()) === 0);
 
 await p.screenshot({ path: process.env.SHOT, fullPage: true });
 await b.close();

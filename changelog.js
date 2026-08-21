@@ -15,6 +15,14 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.16",
+    "d": "august 2026",
+    "changes": [
+      "Fjernet den faste teksten under overskriften i Utvikling — den om at det ikke er et tilbakesteg å løfte mindre. Den sto der uansett hva utviklingen viste, også når det gikk oppover, og ble tapet i stedet for noe man leser. Prinsippet ligger fortsatt i delen: «lettere» har rolig oker og ikke advarselsrødt, og overskriften sier «Litt lettere om dagen», ikke noe om å mislykkes.",
+      "Rettet samtidig at hele Utvikling-delen ikke fulgte tekststørrelse-velgeren. Valgte du større tekst, ble alt annet større mens overskriften, oppsummeringen og øvelsesradene der sto igjen små. Delen ble laget etter at skaleringen kom, og manglet den. En vakt i testene fanger det nå om det skjer igjen."
+    ]
+  },
+  {
     "v": "0.15",
     "d": "august 2026",
     "changes": [
