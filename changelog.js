@@ -86,7 +86,7 @@ const CHANGELOG = [
     "v": "0.06",
     "d": "august 2026",
     "changes": [
-      "Appen har fått versjonsnummer og endringslogg. Nummeret står rett bak tittelen og åpner denne lista. Loggen ligger som ren data i changelog.js, nyeste først — samme oppsett som i UltimatePizza, så månedsryddingen derfra kan brukes her når lista blir lang."
+      "Appen har fått versjonsnummer og endringslogg. Nummeret står rett bak tittelen og åpner denne lista. Loggen ligger som ren data i changelog.js, nyeste først, og leses av appen ved oppstart."
     ]
   },
   {
