@@ -1,12 +1,12 @@
 # Backlog — Bedreliv
 
-Sist oppdatert: 20.08.2026 · v0.08 i prod. Levert så langt: logg med PIN-innlogging
+Sist oppdatert: 21.08.2026 · v0.12 i prod. Levert så langt: logg med PIN-innlogging
 og backend (0.01), strekfigurer og programtekst (0.02), fokus i fullskjerm (0.03),
 runder/sveip/tekststørrelse (0.04), utvikling over tid (0.05), versjonslogg (0.06),
 Gjengen (0.07), heiarop (0.08). 213 sjekker i sju testsett.
 
 **Venter på Runes avgjørelse:** #1 (repoets synlighet), #4 (samarbeid med venn).
-**Klart til å bygges når som helst:** #3 (utkast i localStorage — liten).
+**Klart til å bygges når som helst:** #3 (utkast i localStorage — liten), #6 (adminpanel — middels).
 **Fast rutine, ikke aktuell ennå:** #5 (månedsrydding av endringsloggen).
 
 Punktene er sortert omtrent synkende etter viktighet. Hvert punkt har en
@@ -78,6 +78,36 @@ For at to personer ikke skal tråkke på hverandre trengs:
   oppsettet, men å bli enige om at `main` alltid er det som er ute.
 
 ---
+
+### 6. Adminpanel: runder, brukere og PIN
+
+Bedt om 21.08, uttrykkelig «på sikt». Backenden kan allerede det meste; det
+er grensesnittet som mangler — samme mønster som med retting av økter (#0.11),
+der jobben var liten fordi endepunktene sto klare.
+
+**Antall runder.** `RUNDER` er en konstant satt til 3 i `index.html`. Den
+brukes av kortene, fokus, rettevinduet og prikkeraden, så alt følger etter av
+seg selv om tallet endres. Å gjøre den redigerbar krever et sted å lagre
+valget — enten en ny blob (`bedreliv-innstillinger`) eller en miljøvariabel —
+og et adminfelt. Backenden har alt et tak på 12 runder per øvelse, så den står
+ikke i veien.
+
+**Brukere.** Endepunktene finnes fra første versjon og er aldri tatt i bruk fra
+appen:
+
+| Metode | Sti | Hva |
+|---|---|---|
+| GET | `/api/users/admin?password=X` | liste alle brukere, uten PIN-hash |
+| PATCH | `/api/users/admin/:id` | sett ny PIN `{ password, newPin }` |
+| DELETE | `/api/users/admin/:id?password=X` | slett bruker |
+
+- **I klartekst:** en adminskjerm bak passordet, med liste over brukere og
+  knapper for ny PIN og sletting. Selve arbeidet er skjermen, ikke logikken.
+- To ting å ta stilling til: sletter man en bruker, blir øktene hans liggende
+  igjen med en `ownerId` som ikke finnes — de vil da vises i gjengen som en
+  person uten navn. Enten slettes øktene med, eller så må gjenglista tåle det.
+  Og adminpassordet ligger i dag som miljøvariabel uten noen vei til å endre
+  det fra appen; det bør det nok fortsette å gjøre.
 
 ## Rutiner — ikke aktuelt ennå
 

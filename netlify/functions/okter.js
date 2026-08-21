@@ -6,6 +6,10 @@ import { getStore } from '@netlify/blobs';
 // GET    /api/okter?userId=X         -> ALLE i gjengen sine økter, eldst først
 // GET    /api/okter?admin=PASSWORD   -> det samme (admin)
 // POST   /api/okter                  -> ny økt { ownerId, dato, ovelser, savedBy?, shared? }
+//
+// «ovelser» er { øvelse-id: [ {vekt,reps}, ... ] } — én post per runde.
+// Økter lagret før runder ble loggført har { øvelse-id: {vekt,reps} }; det
+// formatet leses fortsatt, og skrives om til en liste med én runde.
 // PATCH  /api/okter/:id              -> rett opp en økt { userId, ovelser?, dato?, shared? }
 //                                       Endres tallene, nullstilles heiaropene:
 //                                       de gjaldt økta slik den sto.
@@ -25,6 +29,10 @@ const STORE_OKTER = 'bedreliv-okter';
 // Så mange øvelser kan én økt inneholde. Programmet har fem; taket er bare et
 // vern mot at en rusk-klient sender inn noe absurd.
 const MAKS_OVELSER = 40;
+
+// Tak på runder per øvelse. Programmet har tre; taket er romslig så antallet
+// kan endres uten at serveren står i veien.
+const MAKS_RUNDER = 12;
 
 // Tak på heiarop per økt. Vennegjengen er liten; taket er bare et vern mot at
 // en rusk-klient fyller en post med tusenvis av oppføringer.
@@ -65,21 +73,35 @@ function cleanStr(v, max) {
   return typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null;
 }
 
-// Vasker { knebøy: { vekt, reps }, ... } til rene tall. Alt som ikke er et
+function cleanRunde(val) {
+  if (!val || typeof val !== 'object') return null;
+  const vekt = Number(val.vekt);
+  const reps = Number(val.reps);
+  if (!Number.isFinite(vekt) || !Number.isFinite(reps)) return null;
+  if (vekt <= 0 || reps <= 0) return null;
+  if (vekt > 1000 || reps > 1000) return null;
+  return { vekt, reps };
+}
+
+// Vasker { knebøy: [ {vekt,reps}, ... ] } til rene tall. Alt som ikke er et
 // gyldig løft faller ut, så en halvutfylt rad aldri havner i loggen.
+// Tar også imot det gamle formatet — ett {vekt,reps} per øvelse — og skriver
+// det om til en liste med én runde, så eldre økter kan rettes uten videre.
 function cleanOvelser(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const ut = {};
   let n = 0;
   for (const [key, val] of Object.entries(raw)) {
     if (n >= MAKS_OVELSER) break;
-    if (!val || typeof val !== 'object') continue;
-    const vekt = Number(val.vekt);
-    const reps = Number(val.reps);
-    if (!Number.isFinite(vekt) || !Number.isFinite(reps)) continue;
-    if (vekt <= 0 || reps <= 0) continue;
-    if (vekt > 1000 || reps > 1000) continue;
-    ut[String(key).slice(0, 40)] = { vekt, reps };
+    const kandidater = Array.isArray(val) ? val : [val];
+    const runder = [];
+    for (const k of kandidater) {
+      if (runder.length >= MAKS_RUNDER) break;
+      const r = cleanRunde(k);
+      if (r) runder.push(r);
+    }
+    if (!runder.length) continue;
+    ut[String(key).slice(0, 40)] = runder;
     n++;
   }
   return Object.keys(ut).length ? ut : null;
@@ -187,7 +209,12 @@ export default async (req) => {
         // Heiarop er en reaksjon på bestemte tall. Endres tallene, gjelder de
         // ikke lenger det noen heiet på, og fjernes. Flytter du bare datoen,
         // står de — da er løftene de samme.
-        if (JSON.stringify(ovelser) !== JSON.stringify(existing.ovelser)) {
+        //
+        // Den lagrede økta vaskes gjennom samme funksjon før sammenlikningen.
+        // Ellers ville en økt i det gamle formatet alltid sett «endret» ut,
+        // og mistet heiaropene sine ved første berøring.
+        const forrige = cleanOvelser(existing.ovelser);
+        if (JSON.stringify(ovelser) !== JSON.stringify(forrige)) {
           updated.heiarop = [];
         }
         updated.ovelser = ovelser;

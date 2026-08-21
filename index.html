@@ -370,16 +370,66 @@
   }
   .felt input::placeholder { color: #A9B0AC; font-weight: 400; }
 
+  /* Én rad per runde: nummeret til venstre, vekt og reps ved siden av. */
+  .runder { margin-left: 24px; }
+  .runde-hode, .runde-linje { display: flex; align-items: center; gap: 8px; }
+  .runde-linje { margin-top: 5px; }
+  .runde-nr {
+    flex: 0 0 22px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(12px * var(--skala));
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--dust);
+  }
+  .runde-merk {
+    flex: 1;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(11px * var(--skala));
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dust);
+  }
+  .runde-linje input {
+    flex: 1;
+    min-width: 0;
+    background: var(--paper);
+    border: 1px solid var(--etch-sterk);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: calc(20px * var(--skala));
+    font-weight: 600;
+    padding: 5px 8px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .runde-linje input:focus {
+    outline: 2px solid var(--verdigris);
+    outline-offset: 1px;
+    border-color: transparent;
+    background: var(--plate);
+  }
+  .runde-linje input::placeholder { color: #A9B0AC; font-weight: 400; }
+
+  .fokus-tidligere {
+    text-align: center;
+    font-size: calc(12px * var(--skala));
+    color: var(--dust);
+    margin: 5px 0 0;
+    font-variant-numeric: tabular-nums;
+  }
+
   .dommen {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: calc(13px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    padding-bottom: 9px;
     white-space: nowrap;
-    min-width: 52px;
     text-align: right;
+    min-height: calc(17px * var(--skala));
+    margin: 7px 0 2px;
   }
   .opp { color: var(--verdigris); }
   .likt { color: var(--dust); }
@@ -1017,46 +1067,17 @@
     font-size: calc(17px * var(--skala));
     padding: 10px 11px;
   }
-  .rett-ovelse {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-    padding: 11px 0;
-    border-bottom: 1px solid var(--etch);
-  }
+  .rett-ovelse { padding: 13px 0; border-bottom: 1px solid var(--etch); }
   .rett-navn {
-    flex: 1;
-    min-width: 0;
     font-family: 'Barlow Condensed', sans-serif;
     font-size: calc(16px * var(--skala));
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    padding-bottom: 9px;
+    margin: 0 0 4px;
   }
-  .rett-felt { flex: 0 0 84px; }
-  .rett-felt label {
-    display: block;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: calc(10.5px * var(--skala));
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--dust);
-    margin-bottom: 3px;
-  }
-  .rett-felt input {
-    width: 100%;
-    background: var(--plate);
-    border: 1px solid var(--etch-sterk);
-    border-radius: 2px;
-    color: var(--ink);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: calc(24px * var(--skala));
-    font-weight: 600;
-    padding: 6px 8px;
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-  }
+  .rett-hode { display: flex; align-items: center; gap: 8px; }
+  .rett-ovelse .runde-linje input { background: var(--plate); }
   .rett-varsel {
     font-size: calc(11.5px * var(--skala));
     line-height: 1.5;
@@ -1345,11 +1366,32 @@
 
   function volum(v, r) { return (v || 0) * (r || 0); }
 
+  // Én øvelse i en økt er en liste med én post per runde. Økter lagret før
+  // runder ble loggført har ett enkelt {vekt,reps} — de leses som én runde,
+  // så gamle tall aldri forsvinner ut av loggen.
+  function runderFor(okt, id) {
+    var e = okt && okt.ovelser ? okt.ovelser[id] : null;
+    if (!e) return [];
+    if (Array.isArray(e)) return e.filter(function (r) { return r && r.vekt && r.reps; });
+    return (e.vekt && e.reps) ? [e] : [];
+  }
+
+  // Alt som sammenliknes — «forrige økt», utviklingen, gjengen, Ukas løft —
+  // går på den TYNGSTE runden, ikke summen. Summen ville falt bare fordi du
+  // rakk to runder i stedet for tre, og kalt en god dag et tilbakesteg.
+  function besteRunde(okt, id) {
+    var beste = null;
+    runderFor(okt, id).forEach(function (r) {
+      if (!beste || volum(r.vekt, r.reps) > volum(beste.vekt, beste.reps)) beste = r;
+    });
+    return beste;
+  }
+
   // Loggen ligger eldst først, så bakoverløkka finner siste økt med et løft.
   function sisteFor(id) {
     for (var i = okter.length - 1; i >= 0; i--) {
-      var o = okter[i].ovelser[id];
-      if (o && o.vekt) return o;
+      var b = besteRunde(okter[i], id);
+      if (b) return b;
     }
     return null;
   }
@@ -1414,8 +1456,8 @@
 
     OVELSER.forEach(function (ov, i) {
       var sist = sisteFor(ov.id);
-      var u = utkast[ov.id] || {};
-      var slatt = sist && volum(u.vekt, u.reps) > volum(sist.vekt, sist.reps);
+      var beste = besteUtkast(ov.id);
+      var slatt = sist && beste && volum(beste.vekt, beste.reps) > volum(sist.vekt, sist.reps);
 
       h += '<div class="rad' + (slatt ? ' slatt' : '') + '" id="rad-' + ov.id + '">';
       h += '  <div class="rad-topp"><span class="nr">' + (i + 1) + '</span>';
@@ -1430,21 +1472,25 @@
         h += '  <p class="forrige">Ingen tidligere logg — dette blir utgangspunktet.</p>';
       }
 
-      h += '  <div class="felter">';
-      h += '    <div class="felt"><label for="v-' + ov.id + '">Vekt (kg)</label>';
-      h += '      <input id="v-' + ov.id + '" type="number" inputmode="decimal" step="0.5" min="0" placeholder="–" value="' + (u.vekt != null ? u.vekt : '') + '"></div>';
-      h += '    <div class="felt"><label for="r-' + ov.id + '">Reps</label>';
-      h += '      <input id="r-' + ov.id + '" type="number" inputmode="numeric" step="1" min="0" placeholder="–" value="' + (u.reps != null ? u.reps : '') + '"></div>';
-
-      var d = '', k = 'likt';
-      if (sist && u.vekt && u.reps) {
-        var diff = volum(u.vekt, u.reps) - volum(sist.vekt, sist.reps);
-        if (diff > 0) { d = '▲ opp'; k = 'opp'; }
-        else if (diff < 0) { d = '▼ ned'; k = 'ned'; }
-        else { d = '= likt'; k = 'likt'; }
+      // Én rad per runde. Programmet er tre runder, og da skal det være tre
+      // steder å skrive — ikke ett felt du overskriver tre ganger.
+      h += '  <div class="runder">';
+      h += '    <div class="runde-hode"><span class="runde-nr"></span>' +
+           '<span class="runde-merk">Vekt (kg)</span><span class="runde-merk">Reps</span></div>';
+      for (var r = 0; r < RUNDER; r++) {
+        var ur = utkastRunder(ov.id)[r] || {};
+        h += '<div class="runde-linje"><span class="runde-nr">R' + (r + 1) + '</span>' +
+          '<input id="v-' + ov.id + '-' + r + '" type="number" inputmode="decimal" step="0.5" min="0"' +
+          ' placeholder="–" aria-label="' + ov.navn + ', runde ' + (r + 1) + ', vekt"' +
+          ' value="' + (ur.vekt != null ? ur.vekt : '') + '">' +
+          '<input id="r-' + ov.id + '-' + r + '" type="number" inputmode="numeric" step="1" min="0"' +
+          ' placeholder="–" aria-label="' + ov.navn + ', runde ' + (r + 1) + ', reps"' +
+          ' value="' + (ur.reps != null ? ur.reps : '') + '">' +
+          '</div>';
       }
-      h += '    <div class="dommen ' + k + '">' + d + '</div>';
-      h += '  </div></div>';
+      h += '  </div>';
+      h += '  <div class="dommen ' + domKlasse(ov.id) + '">' + domTekst(ov.id) + '</div>';
+      h += '</div>';
     });
 
     h += '<button class="lagre" id="lagre"' + (harUtkast() ? '' : ' disabled') + '>Lagre økta</button>';
@@ -1464,8 +1510,8 @@
              '<div class="okt-dato">' + datoTekst(o.dato) +
              '<span class="okt-rett">rett opp</span></div><div class="okt-tall">';
         OVELSER.forEach(function (ov) {
-          var e = o.ovelser[ov.id];
-          if (e && e.vekt) h += '<span>' + ov.kort + ' ' + e.vekt + '×' + e.reps + '</span>';
+          var b = besteRunde(o, ov.id);
+          if (b) h += '<span>' + ov.kort + ' ' + b.vekt + '×' + b.reps + '</span>';
         });
         h += '</div></button>';
       }
@@ -1478,17 +1524,20 @@
 
   function koble() {
     OVELSER.forEach(function (ov) {
-      ['v', 'r'].forEach(function (p) {
-        var el = document.getElementById(p + '-' + ov.id);
-        if (!el) return;
-        el.addEventListener('input', function () {
-          if (!utkast[ov.id]) utkast[ov.id] = {};
-          var tall = el.value === '' ? null : parseFloat(el.value);
-          utkast[ov.id][p === 'v' ? 'vekt' : 'reps'] = tall;
-          oppdaterRad(ov);
-          oppdaterKnapp();
-        });
-      });
+      for (var r = 0; r < RUNDER; r++) {
+        (function (runde) {
+          ['v', 'r'].forEach(function (p) {
+            var el = document.getElementById(p + '-' + ov.id + '-' + runde);
+            if (!el) return;
+            el.addEventListener('input', function () {
+              var post = utkastRunde(ov.id, runde);
+              post[p === 'v' ? 'vekt' : 'reps'] = el.value === '' ? null : parseFloat(el.value);
+              oppdaterRad(ov);
+              oppdaterKnapp();
+            });
+          });
+        })(r);
+      }
     });
 
     var l = document.getElementById('lagre');
@@ -1522,27 +1571,59 @@
     }
   }
 
+  // Dommen sammenlikner beste utfylte runde med forrige økts beste.
+  function domDiff(id) {
+    var sist = sisteFor(id);
+    var beste = besteUtkast(id);
+    if (!sist || !beste) return null;
+    return volum(beste.vekt, beste.reps) - volum(sist.vekt, sist.reps);
+  }
+
+  function domKlasse(id) {
+    var d = domDiff(id);
+    if (d === null) return 'likt';
+    return d > 0 ? 'opp' : d < 0 ? 'ned' : 'likt';
+  }
+
+  function domTekst(id) {
+    var d = domDiff(id);
+    if (d === null) return '';
+    return d > 0 ? '▲ opp' : d < 0 ? '▼ ned' : '= likt';
+  }
+
   function oppdaterRad(ov) {
-    var u = utkast[ov.id] || {};
-    var sist = sisteFor(ov.id);
     var rad = document.getElementById('rad-' + ov.id);
     var dom = rad.querySelector('.dommen');
-    if (sist && u.vekt && u.reps) {
-      var diff = volum(u.vekt, u.reps) - volum(sist.vekt, sist.reps);
-      dom.className = 'dommen ' + (diff > 0 ? 'opp' : diff < 0 ? 'ned' : 'likt');
-      dom.textContent = diff > 0 ? '▲ opp' : diff < 0 ? '▼ ned' : '= likt';
-      rad.classList.toggle('slatt', diff > 0);
-    } else {
-      dom.textContent = '';
-      rad.classList.remove('slatt');
-    }
+    var d = domDiff(ov.id);
+    dom.className = 'dommen ' + domKlasse(ov.id);
+    dom.textContent = domTekst(ov.id);
+    rad.classList.toggle('slatt', d !== null && d > 0);
+  }
+
+  // Utkastet holder én post per runde: utkast[øvelse][runde] = {vekt, reps}.
+  function utkastRunder(id) {
+    if (!Array.isArray(utkast[id])) utkast[id] = [];
+    return utkast[id];
+  }
+
+  function utkastRunde(id, r) {
+    var liste = utkastRunder(id);
+    if (!liste[r]) liste[r] = {};
+    return liste[r];
+  }
+
+  // Beste utfylte runde i utkastet — samme regel som for lagrede økter.
+  function besteUtkast(id) {
+    var beste = null;
+    utkastRunder(id).forEach(function (r) {
+      if (!r || !r.vekt || !r.reps) return;
+      if (!beste || volum(r.vekt, r.reps) > volum(beste.vekt, beste.reps)) beste = r;
+    });
+    return beste;
   }
 
   function harUtkast() {
-    return OVELSER.some(function (ov) {
-      var u = utkast[ov.id] || {};
-      return u.vekt && u.reps;
-    });
+    return OVELSER.some(function (ov) { return !!besteUtkast(ov.id); });
   }
 
   function oppdaterKnapp() {
@@ -1572,10 +1653,8 @@
   function volumSerieFra(liste, id) {
     var ut = [];
     liste.forEach(function (o) {
-      var e = o.ovelser[id];
-      if (e && e.vekt && e.reps) {
-        ut.push({ volum: e.vekt * e.reps, vekt: e.vekt, reps: e.reps });
-      }
+      var b = besteRunde(o, id);
+      if (b) ut.push({ volum: volum(b.vekt, b.reps), vekt: b.vekt, reps: b.reps });
     });
     return ut;
   }
@@ -1752,16 +1831,22 @@
          '<input id="rett-dato" type="date" value="' + datoFeltVerdi(o.dato) + '"></div>';
 
     OVELSER.forEach(function (ov) {
-      var e = o.ovelser[ov.id] || {};
-      h += '<div class="rett-ovelse">' +
-        '<span class="rett-navn">' + ov.navn + '</span>' +
-        '<div class="rett-felt"><label for="rv-' + ov.id + '">Vekt</label>' +
-        '<input id="rv-' + ov.id + '" type="number" inputmode="decimal" step="0.5" min="0" placeholder="–" value="' +
-        (e.vekt != null ? e.vekt : '') + '"></div>' +
-        '<div class="rett-felt"><label for="rr-' + ov.id + '">Reps</label>' +
-        '<input id="rr-' + ov.id + '" type="number" inputmode="numeric" step="1" min="0" placeholder="–" value="' +
-        (e.reps != null ? e.reps : '') + '"></div>' +
-        '</div>';
+      var runder = runderFor(o, ov.id);
+      h += '<div class="rett-ovelse"><p class="rett-navn">' + ov.navn + '</p>';
+      h += '<div class="rett-hode"><span class="runde-nr"></span>' +
+           '<span class="runde-merk">Vekt</span><span class="runde-merk">Reps</span></div>';
+      for (var r = 0; r < RUNDER; r++) {
+        var e = runder[r] || {};
+        h += '<div class="runde-linje"><span class="runde-nr">R' + (r + 1) + '</span>' +
+          '<input id="rv-' + ov.id + '-' + r + '" type="number" inputmode="decimal" step="0.5" min="0"' +
+          ' placeholder="–" aria-label="' + ov.navn + ', runde ' + (r + 1) + ', vekt"' +
+          ' value="' + (e.vekt != null ? e.vekt : '') + '">' +
+          '<input id="rr-' + ov.id + '-' + r + '" type="number" inputmode="numeric" step="1" min="0"' +
+          ' placeholder="–" aria-label="' + ov.navn + ', runde ' + (r + 1) + ', reps"' +
+          ' value="' + (e.reps != null ? e.reps : '') + '">' +
+          '</div>';
+      }
+      h += '</div>';
     });
 
     h += '  <p class="rett-varsel">Tøm begge feltene for å fjerne en øvelse fra økta. ' +
@@ -1796,9 +1881,13 @@
   function lagreRett(o) {
     var ovelser = {};
     OVELSER.forEach(function (ov) {
-      var v = parseFloat(document.getElementById('rv-' + ov.id).value);
-      var r = parseFloat(document.getElementById('rr-' + ov.id).value);
-      if (v > 0 && r > 0) ovelser[ov.id] = { vekt: v, reps: r };
+      var runder = [];
+      for (var r = 0; r < RUNDER; r++) {
+        var v = parseFloat(document.getElementById('rv-' + ov.id + '-' + r).value);
+        var reps = parseFloat(document.getElementById('rr-' + ov.id + '-' + r).value);
+        if (v > 0 && reps > 0) runder.push({ vekt: v, reps: reps });
+      }
+      if (runder.length) ovelser[ov.id] = runder;
     });
     if (!Object.keys(ovelser).length) {
       rettMelding('En økt må ha minst ett løft. Vil du bli kvitt hele økta, slett den i stedet.');
@@ -1884,7 +1973,7 @@
     h += '<div class="pr-skjema"><h2>Loggskjema</h2>' +
       '<table><thead><tr><th>Dato</th>' + celler + '</tr></thead>' +
       '<tbody>' + rader + '</tbody></table>' +
-      '<p class="pr-hint">Noter vekt × reps, for eksempel «24 × 10».</p></div>';
+      '<p class="pr-hint">Noter vekt × reps fra den tyngste runden, for eksempel «24 × 10».</p></div>';
 
     h += '<p class="pr-fot">' + PROGRESJON + ' — bedreliv.netlify.app' +
       (typeof CHANGELOG !== 'undefined' && CHANGELOG.length ? ' · v' + CHANGELOG[0].v : '') + '</p>';
@@ -2056,8 +2145,8 @@
       OVELSER.forEach(function (ov) {
         var rekke = [];
         p.okter.forEach(function (o) {
-          var e = o.ovelser[ov.id];
-          if (e && e.vekt && e.reps) rekke.push({ dato: new Date(o.dato), e: e });
+          var b = besteRunde(o, ov.id);
+          if (b) rekke.push({ dato: new Date(o.dato), e: b });
         });
         if (rekke.length < 2) return;
         var siste = rekke[rekke.length - 1];
@@ -2280,8 +2369,9 @@
   function lagre(fraFokus) {
     var ovelser = {};
     OVELSER.forEach(function (ov) {
-      var u = utkast[ov.id] || {};
-      if (u.vekt && u.reps) ovelser[ov.id] = { vekt: u.vekt, reps: u.reps };
+      var runder = utkastRunder(ov.id).filter(function (r) { return r && r.vekt && r.reps; })
+        .map(function (r) { return { vekt: r.vekt, reps: r.reps }; });
+      if (runder.length) ovelser[ov.id] = runder;
     });
     if (!Object.keys(ovelser).length) return;
 
@@ -2466,8 +2556,8 @@
     // starter vi på første øvelse som ikke er fylt ut — der du sannsynligvis er.
     if (!fokusPos) {
       var start = -1;
-      for (var i = 0; i < OVELSER.length; i++) {
-        var u = utkast[OVELSER[i].id] || {};
+      for (var i = 0; i < fokusAntallSteg(); i++) {
+        var u = utkastRunder(OVELSER[i % OVELSER.length].id)[Math.floor(i / OVELSER.length)] || {};
         if (!(u.vekt && u.reps)) { start = i; break; }
       }
       fokusPos = start >= 0 ? start : 0;
@@ -2497,7 +2587,7 @@
   function tegnFokus() {
     var ov = fokusOvelse();
     var sist = sisteFor(ov.id);
-    var u = utkast[ov.id] || {};
+    var u = utkastRunder(ov.id)[fokusRunde()] || {};
     var siste = fokusPos === fokusAntallSteg() - 1;
     var andel = Math.round((fokusPos + 1) / fokusAntallSteg() * 100);
 
@@ -2515,15 +2605,23 @@
     h += '  <h2 class="fokus-navn">' + ov.navn + '</h2>';
     h += '  <p class="fokus-maal">' + ov.maal + ' · <b>' + utstyrTekst(ov) + '</b></p>';
 
-    if (fokusRunde() > 0 && u.vekt && u.reps) {
-      // Runde 2 og 3: tallet som står er det du selv la inn tidligere i økta.
-      // Bare den tyngste runden skal loggføres, så her retter du bare opp.
-      h += '  <p class="fokus-forrige">Ført inn i denne økta: <b>' + u.vekt + ' kg × ' + u.reps +
-           '</b>. Ble runden tyngre, oppdater tallet.</p>';
-    } else if (sist) {
-      h += '  <p class="fokus-forrige">Forrige økt: <b>' + sist.vekt + ' kg × ' + sist.reps + '</b> — det er tallet du skal slå.</p>';
+    if (sist) {
+      h += '  <p class="fokus-forrige">Forrige økt: <b>' + sist.vekt + ' kg × ' + sist.reps +
+           '</b> — det er tallet du skal slå.</p>';
     } else {
       h += '  <p class="fokus-forrige">Ingen tidligere logg — dette blir utgangspunktet.</p>';
+    }
+
+    // De andre rundene du alt har ført inn på denne øvelsen i dag. Nyttig når
+    // du står i runde tre og ikke husker hva du tok i runde én.
+    var andre = [];
+    utkastRunder(ov.id).forEach(function (rr, i) {
+      if (i !== fokusRunde() && rr && rr.vekt && rr.reps) {
+        andre.push('R' + (i + 1) + ' ' + rr.vekt + '×' + rr.reps);
+      }
+    });
+    if (andre.length) {
+      h += '  <p class="fokus-tidligere">I dag: ' + andre.join(' · ') + '</p>';
     }
 
     h += '  <div class="fokus-felter">';
@@ -2572,7 +2670,7 @@
   // mister feltet du skriver i markøren for hvert tastetrykk.
   function oppdaterFokusDom() {
     var ov = fokusOvelse();
-    var u = utkast[ov.id] || {};
+    var u = utkastRunder(ov.id)[fokusRunde()] || {};
     var sist = sisteFor(ov.id);
     var dom = document.getElementById('fokus-dom');
     if (!dom) return;
@@ -2605,11 +2703,11 @@
     });
 
     var ov = fokusOvelse();
+    var runde = fokusRunde();
     [['fv', 'vekt'], ['fr', 'reps']].forEach(function (par) {
       var el = document.getElementById(par[0]);
       el.addEventListener('input', function () {
-        if (!utkast[ov.id]) utkast[ov.id] = {};
-        utkast[ov.id][par[1]] = el.value === '' ? null : parseFloat(el.value);
+        utkastRunde(ov.id, runde)[par[1]] = el.value === '' ? null : parseFloat(el.value);
         oppdaterFokusDom();
       });
     });

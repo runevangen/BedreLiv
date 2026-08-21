@@ -15,6 +15,16 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.12",
+    "d": "august 2026",
+    "changes": [
+      "Hver øvelse har nå ett felt per runde — tre rader, ikke ett felt du overskriver tre ganger. Alle rundene loggføres, og i fokus hører feltene til den runden du faktisk står i. Står du i runde tre og ikke husker hva du tok i runde én, står den nå der.",
+      "Alt som sammenliknes — «forrige økt», utviklingen, gjengen og Ukas løft — går på den TYNGSTE runden, ikke summen. Summen ville falt bare fordi du rakk to runder i stedet for tre, og kalt en god dag et tilbakesteg. Slår du forrige økt i én runde, teller det.",
+      "Økter loggført før denne versjonen leses fortsatt som før, med sitt ene tallpar som runde én. De teller med i loggen, utviklingen og gjengen, og kan åpnes og fylles ut med de andre rundene når du vil.",
+      "Antall runder er fortsatt tre, satt ett sted i koden. Å la admin endre det står i backloggen sammen med brukeradministrasjonen."
+    ]
+  },
+  {
     "v": "0.11",
     "d": "august 2026",
     "changes": [

@@ -172,6 +172,29 @@ Fire trinn i mastheaden. Alle `font-size` i stilarket går gjennom
 huskes i localStorage. Selve velgeren er bevisst holdt utenfor skaleringen —
 ellers flytter knappene seg under fingeren idet du trykker.
 
+## Runder og datamodell
+
+Programmet er tre runder, og hver øvelse har ett felt per runde. En økt lagres
+som:
+
+```json
+"ovelser": {
+  "knebøy": [ {"vekt":20,"reps":10}, {"vekt":22,"reps":10}, {"vekt":18,"reps":8} ]
+}
+```
+
+Antall runder står som `RUNDER` ett sted i `index.html`. Kortene, fokus,
+rettevinduet og prikkeraden leser den, så alt følger etter om tallet endres.
+Serveren har et tak på 12 runder per øvelse.
+
+**Alt som sammenliknes går på den tyngste runden**, ikke summen — `besteRunde()`.
+Summen ville falt bare fordi man rakk to runder i stedet for tre, og kalt en god
+dag et tilbakesteg.
+
+**Eldre økter** ble lagret som ett `{vekt,reps}` per øvelse. `runderFor()` leser
+dem som én runde, og serveren skriver dem om til liste ved første retting. Ingen
+migrering, ingenting går tapt.
+
 ## Én eller to manualer
 
 Feltet `manualer` på hver øvelse i `OVELSER` sier hvor mange manualer øvelsen
