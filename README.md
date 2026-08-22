@@ -220,6 +220,20 @@ Fire trinn under overskriften. Alle `font-size` i stilarket går gjennom
 huskes i localStorage. Selve velgeren er bevisst holdt utenfor skaleringen —
 ellers flytter knappene seg under fingeren idet du trykker.
 
+To steder står `min(calc(...), Nvw)` i stedet: overskriften «STYRKELOGG» og
+telleren i fokus. Begge er enkeltord eller nowrap-linjer som verken kan brekke
+eller kappes, og på største tekst er de bredere enn en telefonskjerm. Taket
+lar dem vokse så langt skjermen rekker, og ikke lenger.
+
+Nettlesertestene kjører med de **ekte** fontene, servert lokalt fra
+`tester/rigg/fonter/`. Tidligere svarte de med et tomt stilark for å slippe
+unna proxyen, men da tegnet Chromium i sin egen fallback-font — som er smalere
+enn Archivo Black. Et oppsett kunne se ut til å få plass i testen og likevel
+flyte over kanten på telefonen. `sjekk-storrelse.mjs` går gjennom alle fire
+trinn på tre skjermbredder (320, 375, 390) og sammenlikner `scrollWidth` mot
+`clientWidth` **per element**: et for bredt ord får ikke boksen sin til å
+vokse, det renner bare ut av den, så en ren rect-sjekk ser ingenting.
+
 ## «Annet» — den valgfrie sjette
 
 Løping, sykling, tur: alt som ikke måles i kilo og repetisjoner. Kortet ligger

@@ -1,4 +1,5 @@
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+import { ekteFonter } from './rigg/fonter.mjs';
 
 const B = process.env.BASE || 'http://localhost:8899';
 const feil = [];
@@ -9,10 +10,7 @@ function sjekk(navn, ok, detalj) {
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-// Fontlenka i <head> går gjennom miljøets proxy og bruker 12 sekunder på
-// å gi opp. Avbrytes den her, tar sidelastingen 0,1 sekund i stedet.
-await page.route('**://fonts.googleapis.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-await page.route('**://fonts.gstatic.com/**', (r) => r.fulfill({ status: 200, contentType: 'font/woff2', body: '' }));
+await ekteFonter(page, B);
 page.on('pageerror', (e) => feil.push('JS-feil i siden: ' + e.message));
 // Forventet støy i testmiljøet: Google Fonts når ikke ut, og 401 er selve
 // testen av feil PIN. Alt annet skal telle som en feil.

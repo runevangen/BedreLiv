@@ -2,14 +2,14 @@
 // kilo. Settet passer på at den kan stå alene, at den ikke smitter over på
 // utviklingskurven, og at den kan rettes og fjernes igjen.
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+import { ekteFonter } from './rigg/fonter.mjs';
 const B = process.env.BASE;
 const feil = [];
 const sjekk = (n, ok, d) => { console.log((ok?'  OK   ':'  FEIL ')+n+(d?'  — '+d:'')); if(!ok) feil.push(n); };
 
 const b = await chromium.launch();
 const p = await b.newPage({ viewport:{width:390,height:844} });
-await p.route('**://fonts.googleapis.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-await p.route('**://fonts.gstatic.com/**', (r) => r.fulfill({ status: 200, contentType: 'font/woff2', body: '' }));
+await ekteFonter(p, B);
 p.on('pageerror', e => feil.push('JS-feil: ' + e.message));
 await p.goto(B);
 await p.locator('#port-bytt').click();

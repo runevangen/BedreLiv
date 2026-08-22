@@ -3,6 +3,7 @@
 // flatene, at teksten holder WCAG AA mot flata den står på, og at ingenting
 // faller tilbake til nettleserens standardfont.
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+import { ekteFonter } from './rigg/fonter.mjs';
 import { readFileSync } from 'node:fs';
 const B = process.env.BASE;
 const feil = [];
@@ -24,8 +25,7 @@ const kontrast = (a, b) => {
 
 const b = await chromium.launch();
 const p = await b.newPage({ viewport:{width:390,height:844} });
-await p.route('**://fonts.googleapis.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-await p.route('**://fonts.gstatic.com/**', (r) => r.fulfill({ status: 200, contentType: 'font/woff2', body: '' }));
+await ekteFonter(p, B);
 p.on('pageerror', e => feil.push('JS-feil: ' + e.message));
 await p.goto(B);
 await p.locator('#port-bytt').click();

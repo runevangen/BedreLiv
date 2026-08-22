@@ -2,19 +2,17 @@
 // det uansett hva som er valgt ellers, siden telefonen ofte ligger et stykke
 // unna mens man trener.
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+import { ekteFonter } from './rigg/fonter.mjs';
 const B = process.env.BASE;
 const feil = [];
 const sjekk = (n, ok, d) => { console.log((ok?'  OK   ':'  FEIL ')+n+(d?'  — '+d:'')); if(!ok) feil.push(n); };
 
 const b = await chromium.launch();
 
-for (const [bredde, hoyde, navn] of [[375, 667, 'iPhone SE'], [390, 844, 'iPhone 14']]) {
+// 320 er den smaleste telefonen som fortsatt er i bruk (iPhone SE, 1. gen).
+for (const [bredde, hoyde, navn] of [[320, 568, 'iPhone SE 1'], [375, 667, 'iPhone SE'], [390, 844, 'iPhone 14']]) {
   const p = await b.newPage({ viewport: { width: bredde, height: hoyde } });
-  // Fontlenka i <head> går gjennom miljøets proxy og bruker 12 sekunder på
-  // å gi opp. Vi svarer med et tomt stilark i stedet: da tar sidelastingen
-  // 0,1 sekund, og det oppstår ingen konsollfeil å måtte filtrere bort.
-  await p.route('**://fonts.googleapis.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-  await p.route('**://fonts.gstatic.com/**', (r) => r.fulfill({ status: 200, contentType: 'font/woff2', body: '' }));
+await ekteFonter(p, B);
   p.on('pageerror', (e) => feil.push(navn + ': JS-feil ' + e.message));
   await p.goto(B);
   await p.locator('#port-bytt').click();
@@ -23,11 +21,38 @@ for (const [bredde, hoyde, navn] of [[375, 667, 'iPhone SE'], [390, 844, 'iPhone
   await p.waitForSelector('#innhold:not([hidden])');
   await p.waitForFunction(() => { const e = document.querySelector('#innhold'); return e && !e.classList.contains('laster'); });
 
+  // Et for bredt ord får ikke boksen sin til å vokse — det bare renner ut av
+  // den. Derfor sammenliknes scrollWidth med clientWidth per element, ikke
+  // bare på dokumentet: det er slik «STYRKELOGG» kunne skyve hele siden
+  // sidelengs uten at en eneste boks så for bred ut.
+  const flyterOver = () => p.evaluate(() => {
+    const ut = [];
+    const W = document.documentElement.clientWidth;
+    if (document.documentElement.scrollWidth > W + 1) ut.push('siden selv');
+    document.querySelectorAll('body *').forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (!r.width) return;
+      if (r.right > W + 1 || r.left < -1 || el.scrollWidth > el.clientWidth + 1) {
+        ut.push((el.id ? '#' + el.id : el.tagName.toLowerCase() + '.' + (el.className || '')));
+      }
+    });
+    return ut;
+  });
+
+  console.log('--- ' + navn + ', alle fire trinn ---');
+  for (const trinn of ['normal', 'stor', 'storre', 'storst']) {
+    await p.locator('#tekststorrelse button[data-skala="' + trinn + '"]').click();
+    await p.waitForTimeout(180);
+    const over = await flyterOver();
+    sjekk(navn + ': ingenting flyter over kanten på «' + trinn + '»', over.length === 0, over.join(', '));
+    // Å ikke flyte over er ikke nok: et felt kan i stedet krympe til
+    // ingenting og slippe unna sjekken over. Datofeltet ble til bare
+    // kalenderikonet første gang raden fikk lov til å brekke.
+    const dato = await p.locator('#okt-dato').evaluate(el => el.getBoundingClientRect().width);
+    sjekk(navn + ': datofeltet er lesbart på «' + trinn + '»', dato >= 120, Math.round(dato) + 'px');
+  }
+
   console.log('--- ' + navn + ', største tekst ---');
-  await p.locator('#tekststorrelse button[data-skala="storst"]').click();
-  await p.waitForTimeout(200);
-  const sideScroll = await p.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
-  sjekk(navn + ': ingen sidescroll i loggen', !sideScroll);
   const feltH = await p.locator('#v-knebøy-0').evaluate(el => el.getBoundingClientRect().height);
   sjekk(navn + ': tallfeltene vokser med', feltH > 34, Math.round(feltH) + 'px');
 
@@ -39,8 +64,8 @@ for (const [bredde, hoyde, navn] of [[375, 667, 'iPhone SE'], [390, 844, 'iPhone
   await p.waitForTimeout(300);
   const iFokus = await p.evaluate(() => document.documentElement.getAttribute('data-skala'));
   sjekk(navn + ': fokus setter største trinn', iFokus === 'storst', String(iFokus));
-  const fokusScroll = await p.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
-  sjekk(navn + ': ingen sidescroll i fokus', !fokusScroll);
+  const overFokus = await flyterOver();
+  sjekk(navn + ': ingenting flyter over kanten i fokus', overFokus.length === 0, overFokus.join(', '));
   const bunn = await p.locator('.fokus-bunn').boundingBox();
   sjekk(navn + ': knappene er synlige nederst', bunn.y + bunn.height <= hoyde + 1 && bunn.y > 0,
     'y=' + Math.round(bunn.y));

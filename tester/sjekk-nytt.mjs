@@ -1,14 +1,12 @@
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+import { ekteFonter } from './rigg/fonter.mjs';
 const B = process.env.BASE;
 const feil = [];
 const sjekk = (n, ok, d) => { console.log((ok?'  OK   ':'  FEIL ')+n+(d?'  — '+d:'')); if(!ok) feil.push(n); };
 
 const b = await chromium.launch();
 const p = await b.newPage({ viewport:{width:390,height:844}, deviceScaleFactor:2, hasTouch:true });
-// Fontlenka i <head> går gjennom miljøets proxy og bruker 12 sekunder på
-// å gi opp. Avbrytes den her, tar sidelastingen 0,1 sekund i stedet.
-await p.route('**://fonts.googleapis.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-await p.route('**://fonts.gstatic.com/**', (r) => r.fulfill({ status: 200, contentType: 'font/woff2', body: '' }));
+await ekteFonter(p, B);
 p.on('pageerror', e => feil.push('JS-feil: ' + e.message));
 p.on('console', m => { const t=m.text(); if(m.type()==='error' && !/ERR_CONNECTION_RESET|fonts\.g|401/.test(t)) feil.push('console: '+t); });
 
@@ -34,7 +32,9 @@ sjekk('trykk igjen lukker', !(await p.locator('.hvordan-mer').first().isVisible(
 sjekk('bare ett kort påvirkes', (await p.locator('.hvordan-mer').nth(1).isVisible()) === false);
 
 console.log('--- Tekststørrelse ---');
-const les = () => p.locator('.masthead h1').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
+// Måles på brødteksten, ikke på overskriften: «STYRKELOGG» har et tak i vw
+// så det ene lange ordet ikke skyver hele siden ut over skjermkanten.
+const les = () => p.locator('.banner').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
 const normal = await les();
 sjekk('velgeren finnes', await p.locator('#tekststorrelse').isVisible());
 sjekk('fire trinn', (await p.locator('#tekststorrelse button').count()) === 4);
@@ -49,6 +49,13 @@ for (const navn of ['normal', 'stor', 'storre', 'storst']) {
 sjekk('trinnene vokser hele veien', trinn.every((v, i) => i === 0 || v > trinn[i-1]), trinn.map(Math.round).join(' → '));
 sjekk('største trinn er halvannen gang normal', Math.abs(trinn[3] / trinn[0] - 1.5) < 0.02,
   (trinn[3]/trinn[0]).toFixed(2) + '×');
+// Overskriften vokser også, men bare så langt skjermen rekker.
+const h1 = await p.locator('.masthead h1').evaluate(el => ({
+  px: parseFloat(getComputedStyle(el).fontSize),
+  rekker: el.scrollWidth <= el.clientWidth + 1,
+}));
+sjekk('overskriften vokser med, men holder seg innenfor', h1.px > 34 && h1.rekker,
+  Math.round(h1.px) + 'px, får plass: ' + h1.rekker);
 await p.locator('#tekststorrelse button[data-skala="storst"]').click(); await p.waitForTimeout(150);
 const storst = trinn[3];
 const liten = trinn[0];

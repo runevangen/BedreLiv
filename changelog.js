@@ -15,6 +15,17 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.21",
+    "d": "august 2026",
+    "changes": [
+      "Rettet at siden kunne dras sidelengs på største tekst. «STYRKELOGG» er ett langt ord i en tung font, og det ble bredere enn skjermen — så alt annet så ut til å være kappet på høyre side. Overskriften vokser nå så langt skjermen rekker, og ikke lenger.",
+      "Rettet at lange øvelsesnavn ble kappet med «…» i det åpne kortet på største tekst. Navnet brekker til to linjer i stedet.",
+      "Datoraden og den sammenslåtte linja i øvelseskortene brekker nå ned på egen linje når det ikke er plass ved siden av, i stedet for å bli skjøvet utenfor kanten.",
+      "Mindre luft mellom «Skriv ut programmet» og datoraden — kvitteringslinja der reserverte mer plass enn den trengte.",
+      "Usynlig, men verdt å si: testene tegner nå med de ekte fontene. De brukte en erstatningsfont som er smalere, og det var derfor feilen over slapp gjennom. Nå går de gjennom alle fire tekststørrelser på tre skjermbredder."
+    ]
+  },
+  {
     "v": "0.20",
     "d": "august 2026",
     "changes": [

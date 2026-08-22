@@ -1,4 +1,5 @@
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+import { ekteFonter } from './rigg/fonter.mjs';
 import { writeFileSync } from 'node:fs';
 const B = process.env.BASE;
 const feil = [];
@@ -7,10 +8,7 @@ const sjekk = (n, ok, d) => { console.log((ok?'  OK   ':'  FEIL ')+n+(d?'  — '
 const b = await chromium.launch();
 const p = await b.newPage({ viewport:{width:390,height:844},
   permissions: ['clipboard-read','clipboard-write'] });
-// Fontlenka i <head> går gjennom miljøets proxy og bruker 12 sekunder på
-// å gi opp. Avbrytes den her, tar sidelastingen 0,1 sekund i stedet.
-await p.route('**://fonts.googleapis.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-await p.route('**://fonts.gstatic.com/**', (r) => r.fulfill({ status: 200, contentType: 'font/woff2', body: '' }));
+await ekteFonter(p, B);
 p.on('pageerror', e => feil.push('JS-feil: ' + e.message));
 await p.goto(B);
 await p.locator('#port-bytt').click();

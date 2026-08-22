@@ -33,7 +33,12 @@ const { getStore } = await import('@netlify/blobs');
 const users = (await import('./fn/users.js')).default;
 const okter = (await import('./fn/okter.js')).default;
 
-const TYPER = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
+const TYPER = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.woff2': 'font/woff2'
+};
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
@@ -63,6 +68,19 @@ const server = http.createServer(async (req, res) => {
     const r = await handler(request, {});
     res.writeHead(r.status, { 'Content-Type': 'application/json' });
     res.end(await r.text());
+    return;
+  }
+
+  // Fontene fra Google Fonts, servert lokalt. Testene ruter fonts.googleapis.com
+  // hit: uten de ekte fontene måler nettlesertestene fallback-fonten, som er
+  // smalere enn Archivo Black — og da holder et oppsett i testen som flyter
+  // over på telefonen.
+  if (url.pathname.startsWith('/__fonter/')) {
+    const navn = path.basename(url.pathname);
+    const f = path.join(HER, 'fonter', navn);
+    if (!fs.existsSync(f)) { res.writeHead(404); res.end('404'); return; }
+    res.writeHead(200, { 'Content-Type': TYPER[path.extname(f)] || 'application/octet-stream' });
+    res.end(fs.readFileSync(f));
     return;
   }
 

@@ -183,7 +183,11 @@
   .masthead h1 {
     font-family: var(--forno-font-display);
     font-weight: 700;
-    font-size: calc(34px * var(--skala));
+    /* «STYRKELOGG» er ett ord i en tung display-font: det kan verken brekke
+       eller kappes. På største tekst er 51px bredere enn en telefonskjerm, og
+       hele siden fikk vannrett rulling. Taket på 9,2vw lar overskriften vokse
+       så langt skjermen rekker, og ikke lenger. */
+    font-size: min(calc(34px * var(--skala)), 9.2vw);
     line-height: 1;
     letter-spacing: 0.01em;
     margin: 0;
@@ -376,7 +380,8 @@
   .rad-topp {
     display: flex;
     align-items: baseline;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 2px 8px;
     margin-bottom: 2px;
     width: 100%;
     background: none;
@@ -387,7 +392,11 @@
     color: inherit;
     cursor: pointer;
   }
+  /* Sammendraget følger etter navnet, og faller ned på egen linje først når
+     det ikke er plass ved siden av. Da er linja fortsatt langt kortere enn et
+     åpent kort. */
   .rad-sum {
+    margin-left: auto;
     font-family: var(--forno-font-mono);
     font-size: calc(11.5px * var(--skala));
     color: var(--dust);
@@ -422,12 +431,11 @@
     text-transform: uppercase;
     letter-spacing: 0.02em;
     flex: 1;
-    /* Navnet er det som får gi etter når skriften er skrudd helt opp — tallet
-       til høyre er poenget med den sammenslåtte linja. */
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* Navnet brekker heller enn å bli kappet: «GOBLET KNEBØY» i to linjer er
+       til å leve med, «GOBLET KNEB…» er det ikke. Sammenslått står kortnavnet
+       der, og det brekker sjelden. */
+    overflow-wrap: anywhere;
   }
   /* «Annet» er valgfri, og skal se ut som et tillegg — ikke som øvelse nummer
      seks i programmet. Stiplet kant og «+» i stedet for et tall. */
@@ -655,9 +663,16 @@
     font-size: calc(12.5px * var(--skala));
     color: var(--aksent);
     margin-top: 10px;
-    min-height: 18px;
+    min-height: calc(18px * var(--skala));
   }
   .kvittering.feil { color: var(--varsel); }
+  /* Kvitteringen for utskrift/kopiering står under lenkene sine, ikke midt på
+     siden — og reserverer bare den ene linja den trenger. */
+  .prog-kvitt {
+    text-align: left;
+    margin-top: 3px;
+    min-height: calc(15px * var(--skala));
+  }
 
   h2.seksjon {
     font-family: var(--forno-font-display);
@@ -988,6 +1003,7 @@
   .okt-dag {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 9px;
     background: var(--plate);
     border: 1px solid var(--etch);
@@ -1004,8 +1020,11 @@
     flex: none;
   }
   .okt-dag input {
-    flex: 1;
-    min-width: 0;
+    /* Må ikke kunne krympe til ingenting: med flex-wrap og min-width 0 ble
+       datofeltet til bare kalenderikonet, mens dagnavnet tok plassen. Nå
+       brekker dagnavnet ned på egen linje i stedet. */
+    flex: 1 1 10em;
+    min-width: 9em;
     background: var(--paper);
     border: 1px solid var(--etch-sterk);
     border-radius: 2px;
@@ -1087,15 +1106,18 @@
      teksten er skrudd opp. */
   .fokus-teller {
     font-family: var(--forno-font-mono);
-    font-size: calc(12.5px * var(--skala));
+    /* Taket biter bare på de smaleste skjermene (320px): der dyttet telleren
+       lukkeknappen utenfor kanten på største tekst. På 375 og oppover er det
+       calc-verdien som gjelder. */
+    font-size: min(calc(12.5px * var(--skala)), 5.2vw);
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--dust);
     white-space: nowrap;
   }
-  html[data-skala="storre"] .fokus-teller,
-  html[data-skala="storst"] .fokus-teller { letter-spacing: 0.08em; }
+  html[data-skala="storre"] .fokus-teller { letter-spacing: 0.08em; }
+  html[data-skala="storst"] .fokus-teller { letter-spacing: 0.04em; }
   .fokus-x {
     width: 34px;
     height: 34px;
@@ -2472,7 +2494,7 @@
     return '<div class="prog-rad">' +
       '<button type="button" class="lenke" id="skriv-ut">Skriv ut programmet</button>' +
       '<button type="button" class="lenke" id="kopier-program">Kopier som tekst</button>' +
-      '</div><p class="kvittering" id="program-kvitt"></p>';
+      '</div><p class="kvittering prog-kvitt" id="program-kvitt"></p>';
   }
 
   // ===== Gjengen =====
