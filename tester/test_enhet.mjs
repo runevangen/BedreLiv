@@ -124,6 +124,27 @@ sjekk('datoTekst på en søndag', B.datoTekst(new Date('2026-08-23T12:00:00').to
   sjekk('all tekst utenom selve velgeren skalerer', uskalerte, []);
 }
 
+// ===== Stilarket: fargene skal komme fra tokenene =====
+// Paletten byttes ved å definere tokenene om — én gang for mørkt tema, én
+// gang for lyst. En farge skrevet rett inn i en regel følger ikke med på det
+// byttet, og blir stående mørk på lys bakgrunn. Tokenblokkene og
+// utskriftsreglene er unntatt: der ER fargene definisjonen, og papir er
+// alltid hvitt.
+{
+  const html = readFileSync(path.join(ROT, 'index.html'), 'utf8');
+  let css = html.slice(html.indexOf('<style>'), html.indexOf('</style>'));
+  css = css.slice(0, css.indexOf('@media print'));
+  css = css.replace(/:root\s*\{[^}]*\}/g, '').replace(/html\[data-tema[^{]*\{[^}]*\}/g, '');
+  let regel = '';
+  const harde = [];
+  for (const linje of css.split('\n')) {
+    const m = linje.match(/^\s*([.#][\w-][^{]*)\{/);
+    if (m) regel = m[1].trim();
+    if (/#[0-9A-Fa-f]{3}\b|#[0-9A-Fa-f]{6}\b/.test(linje)) harde.push(regel + ': ' + linje.trim());
+  }
+  sjekk('ingen farger utenfor tokenene', harde, []);
+}
+
 console.log(`  ${ok} enhetssjekker`);
 if (feil.length) {
   console.log('\n  FEIL:');

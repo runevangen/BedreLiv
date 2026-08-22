@@ -80,10 +80,43 @@ du retter bare opp hvis runden ble tyngre.
 Utkastet er felles med loggskjermen, så tall skrevet i fokus står i lista
 etterpå — og motsatt.
 
+## Drakt: palett, fonter og topplinje
+
+Appen bruker UltimatePizzas Forno-drakt. Tokenene er kopiert derfra uendret —
+`--forno-bg`, `--forno-text`, `--forno-accent` og resten — og Bedrelivs egne
+navn (`--paper`, `--ink`, `--aksent` …) er definert av dem. Resten av
+stilarket rører bare Bedrelivs navn, så et nytt tema er å bytte tokenene, ikke
+reglene. En enhetstest passer på at ingen regel utenfor tokenblokkene skriver
+en farge rett inn.
+
+Forno har bare én aksent. Bedreliv trenger i tillegg tre statusfarger som må
+skilles fra hverandre *og* fra aksenten: `--opp`, `--lettere` og `--varsel`.
+Alle tre er målt mot både `--paper` og `--plate` i sitt eget tema og klarer
+WCAG AA; `sjekk-drakt.mjs` regner kontrasten på fargene nettleseren faktisk
+maler, i begge temaer.
+
+Fontene er UltimatePizzas tre: Archivo Black på appnavn, overskrifter og
+øvelsesnavn, Archivo på brødtekst, IBM Plex Mono på tall, tellere og stempler.
+Fonten står på `body`, ikke på `#app` — fokus, «Endre» og endringsloggen
+ligger utenfor `#app` og arvet ellers nettleserens serif.
+
+Tre temavalg, som i UltimatePizza: **mørk** (standard), **lys** og **system**.
+Knappen i topplinja går rundt. Valget huskes i localStorage og settes som
+`data-tema` på `<html>` av et lite skript i `<head>` — kjørte det etter
+stilarket, ville appen blinket mørk før den ble lys. Står valget på «system»,
+lytter appen på `prefers-color-scheme` og snur med telefonen mens den ligger
+åpen.
+
+Topplinja er bygget som UltimatePizzas: appnavn med versjonsnummeret rett bak,
+et stempel under (hvem du er logget inn som · hvilken dag), og handlingene til
+høyre. Den er `position: sticky`, så versjonen og navnet står der også langt
+nede i loggen. Flata er den løftede (`--plate`), ikke den nedsenkede: på
+`--forno-bg-sunken` faller aksenten til 3,8:1 i lyst tema.
+
 ## Versjon og endringslogg
 
-Versjonsnummeret står rett bak tittelen og åpner loggen. Nummeret leses fra
-toppen av `CHANGELOG`, så det kan ikke komme ut av takt med lista.
+Versjonsnummeret står rett bak appnavnet i topplinja og åpner loggen. Nummeret
+leses fra toppen av `CHANGELOG`, så det kan ikke komme ut av takt med lista.
 
 Reglene er de samme som i UltimatePizza:
 
@@ -175,14 +208,14 @@ av sa «som før».
 
 ### Om tonen
 
-«Lettere» er ikke en feil, og er ikke farget som en. Advarselsrødt er
-reservert for «Unngå»-linjene; retningen ned bruker en rolig oker. Delen har
-en fast linje om at det finnes mange grunner til å løfte mindre en dag.
-Retningen sies alltid med både symbol og ord, aldri farge alene.
+«Lettere» er ikke en feil, og er ikke farget som en. `--varsel` er reservert
+for «Unngå»-linjene; retningen ned bruker `--lettere`, en rolig blågrå som
+verken er advarsel eller aksent. Retningen sies alltid med både symbol og ord,
+aldri farge alene.
 
 ## Tekststørrelse
 
-Fire trinn i mastheaden. Alle `font-size` i stilarket går gjennom
+Fire trinn under overskriften. Alle `font-size` i stilarket går gjennom
 `calc(Npx * var(--skala))`, og valget settes som `data-skala` på `<html>` og
 huskes i localStorage. Selve velgeren er bevisst holdt utenfor skaleringen —
 ellers flytter knappene seg under fingeren idet du trykker.

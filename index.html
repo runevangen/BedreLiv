@@ -3,30 +3,88 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F3F4F1">
+<meta name="theme-color" content="#181310">
+<meta name="theme-color" content="#f5f0e6" media="(prefers-color-scheme: light)">
 <title>Styrkelogg</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script>
+  // Temaet må stå før stilarket tegner, ellers blinker appen mørk før den
+  // blir lys. Samme tre valg som i UltimatePizza — system, lys, mørk — og
+  // samme standard: mørk.
+  (function () {
+    var v = 'mork';
+    try { v = localStorage.getItem('bedrelivTema') || 'mork'; } catch (e) {}
+    var lys = v === 'lys' || (v === 'system' && window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: light)').matches);
+    if (lys) document.documentElement.setAttribute('data-tema', 'lys');
+  })();
+</script>
 <style>
   :root {
     /* Tekststørrelse: alle font-size går gjennom denne. Settes på <html>. */
     --skala: 1;
 
-    --paper: #F3F4F1;
-    --plate: #FFFFFF;
-    --etch: #D9DCD6;
-    --etch-sterk: #C2C7BF;
-    --ink: #1A2127;
-    --dust: #6B757C;
-    --verdigris: #1E7D6B;
-    --verdigris-lys: #E8F3F0;
-    --rust: #A8452F;
-    /* «Lettere enn før» er ikke en advarsel, og skal ikke ha samme farge som
-       «Unngå». Rolig oker i stedet for alarmrødt. Begge klarer WCAG AA på
-       papirbakgrunnen (5,3:1). */
-    --oker: #8A5A2B;
-    --dust-sterk: #5C666D;
+    /* ===== Forno — designtokenene fra UltimatePizza, uendret ===== */
+    --forno-bg: #181310;
+    --forno-bg-raised: #231a14;
+    --forno-bg-sunken: #1f1712;
+    --forno-border: #3a2a1d;
+    --forno-border-soft: #33261c;
+    --forno-text: #f4ece0;
+    --forno-text-muted: #c9b8a4;
+    --forno-text-faint: #ab9985;
+    --forno-accent: #e8590c;
+    --forno-accent-soft: #2a1c0f;
+    --forno-accent-text: #e8a06e;
+    --forno-font-display: 'Archivo Black', sans-serif;
+    --forno-font-body: 'Archivo', -apple-system, system-ui, sans-serif;
+    --forno-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+    /* Forno har én aksent. Bedreliv trenger i tillegg tre statusfarger som
+       må skilles fra hverandre OG fra aksenten: opp, lettere og advarsel.
+       Alle tre er målt mot både --paper og --plate i sitt tema. */
+    --opp: #4FB39A;              /* tyngre enn sist        7,2:1 / 6,7:1 */
+    --lettere: #9DB3C4;          /* lettere enn sist       8,5:1 / 7,9:1 */
+    --varsel: #E8836F;           /* «Unngå», feilmeldinger 6,9:1 / 6,4:1 */
+    --brod: var(--forno-text-muted);
+    --hint: #94836f;             /* plassholdere           4,7:1 */
+    --paa-aksent: #1a1512;       /* tekst oppå aksentflate 5,1:1 */
+
+    /* Bedrelivs egne navn, tegnet av Forno-tokenene. Resten av stilarket
+       rører bare disse — et nytt tema er å bytte tokenene, ikke reglene. */
+    --paper: var(--forno-bg);
+    --plate: var(--forno-bg-raised);
+    --etch: var(--forno-border-soft);
+    --etch-sterk: var(--forno-border);
+    --ink: var(--forno-text);
+    --dust: var(--forno-text-faint);
+    --dust-sterk: var(--forno-text-muted);
+    --aksent: var(--forno-accent-text);
+    --aksent-flate: var(--forno-accent);
+    --aksent-svak: var(--forno-accent-soft);
+  }
+
+  /* Lys pergament — samme palett som UltimatePizzas «Lys»-tema. Settes som
+     data-tema på <html> av skriptet i <head>, før noe rekker å tegnes. */
+  html[data-tema="lys"] {
+    --forno-bg: #f5f0e6;
+    --forno-bg-raised: #fffdf8;
+    --forno-bg-sunken: #e8dcc4;
+    --forno-border: #e0d3b5;
+    --forno-border-soft: #ece3d2;
+    --forno-text: #3f2d10;
+    --forno-text-muted: #40301a;
+    --forno-text-faint: #6d5a3a;
+    --forno-accent: #e8590c;
+    --forno-accent-soft: #fbe4d4;
+    --forno-accent-text: #c2410c;
+
+    --opp: #1A7060;              /* 5,2:1 */
+    --lettere: #4E6B80;          /* 5,0:1 */
+    --varsel: #A8452F;           /* 5,2:1 */
+    --hint: #806b50;             /* 4,5:1 */
   }
 
   html[data-skala="stor"]   { --skala: 1.14; }
@@ -39,18 +97,75 @@
      hidden-attributtet, og elementet blir stående synlig. */
   [hidden] { display: none !important; }
 
-  html, body { margin: 0; background: var(--paper); }
+  /* Fonten hører hjemme på body, ikke på #app: fokus, «Endre» og
+     endringsloggen ligger utenfor #app og arvet ellers nettleserens
+     standard — brødteksten der ble stående i serif. */
+  html, body {
+    margin: 0;
+    background: var(--paper);
+    font-family: var(--forno-font-body);
+  }
 
   #app {
     background: var(--paper);
     color: var(--ink);
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
-    padding: 18px 14px 40px;
+    font-family: var(--forno-font-body);
+    padding: 0 14px 40px;
     min-height: 100vh;
     max-width: 560px;
     margin: 0 auto;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Topplinja er bygget som UltimatePizzas: appnavn med versjonsnummeret
+     rett bak, et lite stempel under, og handlingene til høyre. Den ligger
+     klistret øverst, så versjonen og hvem du er logget inn som alltid er
+     synlig — også langt nede i loggen. */
+  .topplinje {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 56px;
+    margin: 0 -14px 14px;
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 14px 8px;
+    /* Løftet flate, ikke nedsenket: på --forno-bg-sunken faller aksenten —
+       og dermed versjonsnummeret — til 3,8:1 i lyst tema. */
+    background: var(--plate);
+    border-bottom: 1px solid var(--etch);
+  }
+  .topplinje-tittel { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .topplinje-tittel > span {
+    font-family: var(--forno-font-display);
+    font-size: calc(14px * var(--skala));
+    letter-spacing: 0.01em;
+    color: var(--ink);
+  }
+  .topplinje-tittel small {
+    font-family: var(--forno-font-mono);
+    font-size: calc(10px * var(--skala));
+    color: var(--dust);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .topplinje-handling { display: flex; align-items: center; gap: 8px; flex: none; }
+  .tema {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: 50%;
+    border: 1px solid var(--etch-sterk);
+    background: var(--plate);
+    color: var(--dust);
+    font-size: calc(15px * var(--skala));
+    line-height: 1;
+    cursor: pointer;
+  }
+  .tema:hover { color: var(--ink); }
 
   .masthead {
     border-bottom: 2px solid var(--ink);
@@ -58,7 +173,7 @@
     margin-bottom: 18px;
   }
   .kicker {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(12px * var(--skala));
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -66,7 +181,7 @@
     margin: 0 0 2px;
   }
   .masthead h1 {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-display);
     font-weight: 700;
     font-size: calc(34px * var(--skala));
     line-height: 1;
@@ -83,7 +198,7 @@
     color: var(--dust);
   }
   .meta strong {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(17px * var(--skala));
     font-weight: 600;
     color: var(--ink);
@@ -99,7 +214,7 @@
     color: var(--dust);
   }
   .bruker b {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(15px * var(--skala));
     font-weight: 600;
     color: var(--ink);
@@ -112,7 +227,7 @@
     border: 1px solid var(--etch-sterk);
     background: var(--plate);
     color: var(--dust);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-weight: 600;
     line-height: 1;
     padding: 4px 8px;
@@ -124,35 +239,38 @@
   .tekststorrelse button:nth-child(3) { font-size: 16px; }
   .tekststorrelse button:nth-child(4) { font-size: 18px; }
   .tekststorrelse button.valgt {
-    border-color: var(--verdigris);
-    color: var(--verdigris);
-    background: var(--verdigris-lys);
+    border-color: var(--aksent);
+    color: var(--aksent);
+    background: var(--aksent-svak);
   }
 
   .lenke {
     background: none;
     border: none;
     padding: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(12px * var(--skala));
-    color: var(--verdigris);
+    color: var(--aksent);
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;
   }
   .lenke:hover { color: var(--ink); }
 
-  /* Versjonsnummeret sitter i tittelen, men skal ikke rope. */
+  /* Versjonsnummeret står rett bak appnavnet og åpner endringsloggen —
+     samme mekanikk og samme uttrykk som i UltimatePizza. Teksten settes av
+     JS til 'v' + CHANGELOG[0].v, så den kan ikke komme ut av takt med
+     loggen. */
   .versjon {
     border: none;
     background: none;
     padding: 0;
-    font-family: 'Inter', sans-serif;
-    font-size: calc(12px * var(--skala));
+    font-family: var(--forno-font-mono);
+    font-size: calc(11px * var(--skala));
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0;
-    color: var(--verdigris);
+    color: var(--aksent);
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;
@@ -173,7 +291,7 @@
   }
   #endringer.apen { display: flex; }
   .endr-tittel {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(12.5px * var(--skala));
     font-weight: 600;
     letter-spacing: 0.16em;
@@ -214,7 +332,7 @@
   .endr-post:first-child { border-top: none; }
   .endr-nr { display: flex; align-items: baseline; gap: 9px; }
   .endr-nr b {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(21px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.02em;
@@ -224,17 +342,17 @@
   .endr-post li {
     font-size: calc(13px * var(--skala));
     line-height: 1.6;
-    color: #4A545B;
+    color: var(--brod);
     margin-bottom: 8px;
   }
 
   .banner {
-    background: var(--verdigris-lys);
-    border-left: 3px solid var(--verdigris);
+    background: var(--aksent-svak);
+    border-left: 3px solid var(--aksent);
     padding: 10px 12px;
     font-size: calc(13px * var(--skala));
     line-height: 1.5;
-    color: #3A4A47;
+    color: var(--brod);
     margin-bottom: 18px;
   }
 
@@ -247,8 +365,8 @@
     transition: border-color .18s ease, box-shadow .18s ease;
   }
   .rad.slatt {
-    border-color: var(--verdigris);
-    box-shadow: inset 3px 0 0 var(--verdigris);
+    border-color: var(--opp);
+    box-shadow: inset 3px 0 0 var(--opp);
   }
 
   /* Fem øvelser med figurer, forrige økt og en rad per runde blir en lang
@@ -270,6 +388,7 @@
     cursor: pointer;
   }
   .rad-sum {
+    font-family: var(--forno-font-mono);
     font-size: calc(11.5px * var(--skala));
     color: var(--dust);
     font-variant-numeric: tabular-nums;
@@ -287,7 +406,7 @@
   .rad.apen .rad-sum { display: none; }
   .rad:not(.apen) .maal { display: none; }
   .nr {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(13px * var(--skala));
     font-weight: 600;
     color: var(--dust);
@@ -297,7 +416,7 @@
      så navnet ikke må kappes for å gi plass til tallet til høyre. Åpner du
      kortet, står hele navnet der. */
   .navn, .navn-kort {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-display);
     font-size: calc(20px * var(--skala));
     font-weight: 600;
     text-transform: uppercase;
@@ -340,30 +459,30 @@
   }
   .fig .fyll { fill: currentColor; stroke: none; }
   .fig .bakke { stroke: var(--etch-sterk); stroke-width: 1.5; stroke-linecap: round; }
-  .fig .vekt { fill: var(--verdigris); }
+  .fig .vekt { fill: var(--aksent); }
   .pil { color: var(--dust); font-size: calc(11px * var(--skala)); }
   .hvordan-tekst { min-width: 0; }
   .hvordan-tekst .utstyr {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(11.5px * var(--skala));
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--verdigris);
+    color: var(--aksent);
     margin: 0 0 3px;
   }
   .hvordan-tekst .slik {
     margin: 0;
     font-size: calc(11.5px * var(--skala));
     line-height: 1.5;
-    color: #4A545B;
+    color: var(--brod);
   }
   .hvordan-tekst .vis-mer { margin-top: 5px; }
   .hvordan-tekst .feil {
     margin: 4px 0 0;
     font-size: calc(11px * var(--skala));
     line-height: 1.45;
-    color: var(--rust);
+    color: var(--varsel);
   }
 
   .forrige {
@@ -372,7 +491,7 @@
     margin: 0 0 9px 24px;
     font-variant-numeric: tabular-nums;
   }
-  .forrige b { color: var(--ink); font-weight: 600; }
+  .forrige b { font-family: var(--forno-font-mono); color: var(--ink); font-weight: 600; }
 
   .felter {
     display: flex;
@@ -383,7 +502,7 @@
   .felt { flex: 1; }
   .felt label {
     display: block;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(11px * var(--skala));
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -396,19 +515,19 @@
     border: 1px solid var(--etch-sterk);
     border-radius: 2px;
     color: var(--ink);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(22px * var(--skala));
     font-weight: 600;
     padding: 7px 9px;
     font-variant-numeric: tabular-nums;
   }
   .felt input:focus {
-    outline: 2px solid var(--verdigris);
+    outline: 2px solid var(--aksent);
     outline-offset: 1px;
     border-color: transparent;
     background: var(--plate);
   }
-  .felt input::placeholder { color: #A9B0AC; font-weight: 400; }
+  .felt input::placeholder { color: var(--hint); font-weight: 400; }
 
   /* Én rad per runde: nummeret til venstre, vekt og reps ved siden av. */
   .runder { margin-left: 24px; }
@@ -416,7 +535,7 @@
   .runde-linje { margin-top: 5px; }
   .runde-nr {
     flex: 0 0 22px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(12px * var(--skala));
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -424,7 +543,7 @@
   }
   .runde-merk {
     flex: 1;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(11px * var(--skala));
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -437,7 +556,7 @@
     border: 1px solid var(--etch-sterk);
     border-radius: 2px;
     color: var(--ink);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(20px * var(--skala));
     font-weight: 600;
     padding: 5px 8px;
@@ -445,12 +564,12 @@
     font-variant-numeric: tabular-nums;
   }
   .runde-linje input:focus {
-    outline: 2px solid var(--verdigris);
+    outline: 2px solid var(--aksent);
     outline-offset: 1px;
     border-color: transparent;
     background: var(--plate);
   }
-  .runde-linje input::placeholder { color: #A9B0AC; font-weight: 400; }
+  .runde-linje input::placeholder { color: var(--hint); font-weight: 400; }
 
   .fokus-tidligere {
     text-align: center;
@@ -461,7 +580,7 @@
   }
 
   .dommen {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(13px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -471,17 +590,17 @@
     min-height: calc(17px * var(--skala));
     margin: 7px 0 2px;
   }
-  .opp { color: var(--verdigris); }
+  .opp { color: var(--opp); }
   .likt { color: var(--dust); }
-  .ned { color: var(--oker); }
+  .ned { color: var(--lettere); }
 
   .lagre {
     width: 100%;
-    background: var(--verdigris);
-    color: #FFFFFF;
+    background: var(--aksent-flate);
+    color: var(--paa-aksent);
     border: none;
     border-radius: 3px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(19px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -496,14 +615,14 @@
   .kvittering {
     text-align: center;
     font-size: calc(12.5px * var(--skala));
-    color: var(--verdigris);
+    color: var(--aksent);
     margin-top: 10px;
     min-height: 18px;
   }
-  .kvittering.feil { color: var(--rust); }
+  .kvittering.feil { color: var(--varsel); }
 
   h2.seksjon {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-display);
     font-size: calc(13px * var(--skala));
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -518,13 +637,13 @@
   .utv-topp {
     background: var(--plate);
     border: 1px solid var(--etch);
-    border-left: 3px solid var(--verdigris);
+    border-left: 3px solid var(--aksent);
     border-radius: 3px;
     padding: 12px 13px;
     margin-bottom: 12px;
   }
   .utv-overskrift {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-display);
     font-size: calc(24px * var(--skala));
     font-weight: 700;
     text-transform: uppercase;
@@ -543,7 +662,7 @@
   .utv-navn { flex: 1; min-width: 0; }
   .utv-navn b {
     display: block;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(16px * var(--skala));
     font-weight: 600;
     text-transform: uppercase;
@@ -567,11 +686,11 @@
     stroke-linejoin: round;
   }
   .spark-na { fill: var(--dust-sterk); }
-  .spark-na.opp { fill: var(--verdigris); }
-  .spark-na.lettere { fill: var(--oker); }
+  .spark-na.opp { fill: var(--opp); }
+  .spark-na.lettere { fill: var(--lettere); }
 
   .utv-dom {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(13px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -582,29 +701,29 @@
     min-width: 74px;
     color: var(--dust-sterk);
   }
-  .utv-dom.opp { color: var(--verdigris); }
-  .utv-dom.lettere { color: var(--oker); }
+  .utv-dom.opp { color: var(--opp); }
+  .utv-dom.lettere { color: var(--lettere); }
 
   /* ===== Gjengen ===== */
   .gj-seksjon { display: flex; align-items: baseline; justify-content: space-between; }
 
   .gj-loft {
-    background: var(--verdigris-lys);
-    border-left: 3px solid var(--verdigris);
+    background: var(--aksent-svak);
+    border-left: 3px solid var(--aksent);
     padding: 10px 12px;
     margin-bottom: 12px;
   }
   .gj-loft-merke {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(11px * var(--skala));
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--verdigris);
+    color: var(--aksent);
     margin: 0;
   }
   .gj-loft-navn {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-display);
     font-size: calc(22px * var(--skala));
     font-weight: 700;
     text-transform: uppercase;
@@ -615,7 +734,7 @@
   .gj-loft-tall {
     font-size: calc(12.5px * var(--skala));
     line-height: 1.5;
-    color: #3A4A47;
+    color: var(--brod);
     margin: 3px 0 0;
     font-variant-numeric: tabular-nums;
   }
@@ -625,7 +744,7 @@
   .gj-hode b {
     flex: 1;
     min-width: 0;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(17px * var(--skala));
     font-weight: 600;
     text-transform: uppercase;
@@ -633,7 +752,7 @@
   }
   .gj-hode b em {
     font-style: normal;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(11px * var(--skala));
     font-weight: 400;
     text-transform: none;
@@ -650,13 +769,13 @@
     border: 1px solid var(--etch-sterk);
     background: var(--plate);
   }
-  .gj-uke i.fylt { background: var(--verdigris); border-color: var(--verdigris); }
+  .gj-uke i.fylt { background: var(--aksent-flate); border-color: var(--aksent); }
   .gj-uke em {
     font-style: normal;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(11px * var(--skala));
     font-weight: 600;
-    color: var(--verdigris);
+    color: var(--aksent);
     margin-left: 1px;
   }
 
@@ -671,20 +790,20 @@
     cursor: pointer;
   }
   .gj-heia span {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(12px * var(--skala));
     font-weight: 700;
     color: var(--dust-sterk);
     margin-left: 2px;
   }
-  .gj-heia.mitt { border-color: var(--verdigris); background: var(--verdigris-lys); }
-  .gj-heia.mitt span { color: var(--verdigris); }
+  .gj-heia.mitt { border-color: var(--aksent); background: var(--aksent-svak); }
+  .gj-heia.mitt span { color: var(--aksent); }
   .gj-heia:disabled { opacity: 0.5; cursor: default; }
 
   .gj-heiere {
     font-size: calc(11.5px * var(--skala));
     line-height: 1.5;
-    color: var(--verdigris);
+    color: var(--aksent);
     margin: 3px 0 0;
   }
 
@@ -707,15 +826,15 @@
     margin: 3px 0 0;
   }
   .gj-dom {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(12px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--dust-sterk);
   }
-  .gj-dom.opp { color: var(--verdigris); }
-  .gj-dom.lettere { color: var(--oker); }
+  .gj-dom.opp { color: var(--opp); }
+  .gj-dom.lettere { color: var(--lettere); }
 
   .gj-skjulte {
     font-size: calc(11.5px * var(--skala));
@@ -727,10 +846,10 @@
   .inviter {
     width: 100%;
     background: var(--plate);
-    border: 1px solid var(--verdigris);
+    border: 1px solid var(--aksent);
     border-radius: 3px;
-    color: var(--verdigris);
-    font-family: 'Barlow Condensed', sans-serif;
+    color: var(--aksent);
+    font-family: var(--forno-font-body);
     font-size: calc(16px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -745,7 +864,7 @@
     padding: 10px 0;
   }
   .okt-dato {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(16px * var(--skala));
     font-weight: 600;
     text-transform: uppercase;
@@ -778,13 +897,13 @@
     background: none;
     border: 1px solid var(--etch-sterk);
     color: var(--dust);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(11.5px * var(--skala));
     padding: 7px 14px;
     border-radius: 2px;
     cursor: pointer;
   }
-  .slett:hover { border-color: var(--rust); color: var(--rust); }
+  .slett:hover { border-color: var(--varsel); color: var(--varsel); }
   .slett:disabled { cursor: default; opacity: .6; }
 
   /* ===== Innloggingsport ===== */
@@ -803,14 +922,14 @@
   /* Egne inputstiler i porten: navn og PIN leses bedre i Inter enn i den
      kondenserte tallskriften, og 18px hindrer at iOS zoomer inn ved fokus. */
   .port .felt input {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(18px * var(--skala));
     font-weight: 500;
     padding: 10px 11px;
     background: var(--plate);
   }
   .port-feil {
-    color: var(--rust);
+    color: var(--varsel);
     font-size: calc(12.5px * var(--skala));
     line-height: 1.5;
     min-height: 18px;
@@ -839,7 +958,7 @@
     margin-bottom: 12px;
   }
   .okt-dag label {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(11.5px * var(--skala));
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -853,18 +972,18 @@
     border: 1px solid var(--etch-sterk);
     border-radius: 2px;
     color: var(--ink);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(16px * var(--skala));
     padding: 6px 8px;
   }
   .okt-dag-navn {
     flex: none;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(13px * var(--skala));
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: var(--verdigris);
+    color: var(--aksent);
     white-space: nowrap;
   }
 
@@ -881,11 +1000,11 @@
 
   .fokus-start {
     width: 100%;
-    background: var(--verdigris);
-    color: #FFFFFF;
+    background: var(--aksent-flate);
+    color: var(--paa-aksent);
     border: none;
     border-radius: 3px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(18px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -929,7 +1048,7 @@
      og dytte lukkeknappen ned. Derfor nowrap og litt slakkere sperring når
      teksten er skrudd opp. */
   .fokus-teller {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(12.5px * var(--skala));
     font-weight: 600;
     letter-spacing: 0.16em;
@@ -959,7 +1078,7 @@
     margin: 11px 16px 0;
     overflow: hidden;
   }
-  .fokus-strek i { display: block; height: 100%; background: var(--verdigris); }
+  .fokus-strek i { display: block; height: 100%; background: var(--aksent-flate); }
 
   .fokus-teller em { font-style: normal; opacity: 0.45; margin: 0 2px; }
 
@@ -981,8 +1100,8 @@
     background: var(--plate);
     cursor: pointer;
   }
-  .prikk.gjort { background: var(--verdigris); border-color: var(--verdigris); }
-  .prikk.na { border: 2px solid var(--verdigris); background: var(--verdigris-lys); }
+  .prikk.gjort { background: var(--aksent-flate); border-color: var(--aksent); }
+  .prikk.na { border: 2px solid var(--aksent); background: var(--aksent-svak); }
 
   .fokus-rull { flex: 1; overflow-y: auto; min-height: 0; padding: 0 16px 14px; }
 
@@ -997,7 +1116,7 @@
   .fokus-figurer .pil { font-size: calc(17px * var(--skala)); }
 
   .fokus-navn {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-display);
     font-size: calc(32px * var(--skala));
     font-weight: 700;
     text-transform: uppercase;
@@ -1008,12 +1127,12 @@
   }
   .fokus-maal { text-align: center; font-size: calc(12.5px * var(--skala)); color: var(--dust); margin: 5px 0 0; }
   .fokus-maal b {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(13px * var(--skala));
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--verdigris);
+    color: var(--aksent);
   }
   .fokus-forrige {
     text-align: center;
@@ -1028,7 +1147,7 @@
   .fokus-felt { flex: 1; }
   .fokus-felt label {
     display: block;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(11.5px * var(--skala));
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1042,7 +1161,7 @@
     border: 1px solid var(--etch-sterk);
     border-radius: 3px;
     color: var(--ink);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-mono);
     font-size: calc(38px * var(--skala));
     font-weight: 600;
     padding: 8px 10px;
@@ -1050,15 +1169,15 @@
     font-variant-numeric: tabular-nums;
   }
   .fokus-felt input:focus {
-    outline: 2px solid var(--verdigris);
+    outline: 2px solid var(--aksent);
     outline-offset: 1px;
     border-color: transparent;
   }
-  .fokus-felt input::placeholder { color: #A9B0AC; font-weight: 400; }
+  .fokus-felt input::placeholder { color: var(--hint); font-weight: 400; }
 
   .fokus-dom {
     text-align: center;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(21px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -1067,8 +1186,8 @@
     margin-top: 12px;
   }
 
-  .fokus-slik { font-size: calc(13px * var(--skala)); line-height: 1.55; color: #4A545B; margin: 16px 0 0; }
-  .fokus-feil { font-size: calc(12px * var(--skala)); line-height: 1.5; color: var(--rust); margin: 6px 0 0; }
+  .fokus-slik { font-size: calc(13px * var(--skala)); line-height: 1.55; color: var(--brod); margin: 16px 0 0; }
+  .fokus-feil { font-size: calc(12px * var(--skala)); line-height: 1.5; color: var(--varsel); margin: 6px 0 0; }
   .fokus-vaken { text-align: center; font-size: calc(11px * var(--skala)); color: var(--dust); margin: 14px 0 0; }
 
   .fokus-bunn {
@@ -1080,7 +1199,7 @@
   .fokus-bunn button {
     height: 54px;
     border-radius: 3px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(17px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -1096,7 +1215,7 @@
     color: var(--dust);
   }
   .fokus-tilbake:disabled { opacity: 0.4; cursor: default; }
-  .fokus-fram { flex: 1; border: none; background: var(--verdigris); color: #FFFFFF; }
+  .fokus-fram { flex: 1; border: none; background: var(--aksent-flate); color: var(--paa-aksent); }
   .fokus-fram:disabled { background: var(--etch); color: var(--dust); cursor: default; }
 
   /* ===== Endre en økt ===== */
@@ -1122,7 +1241,7 @@
     border-bottom: 2px solid var(--ink);
   }
   .rett-tittel {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(12.5px * var(--skala));
     font-weight: 600;
     letter-spacing: 0.16em;
@@ -1140,7 +1259,7 @@
   }
   .rett-dato label {
     display: block;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(11.5px * var(--skala));
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1153,13 +1272,13 @@
     border: 1px solid var(--etch-sterk);
     border-radius: 2px;
     color: var(--ink);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(17px * var(--skala));
     padding: 10px 11px;
   }
   .rett-ovelse { padding: 13px 0; border-bottom: 1px solid var(--etch); }
   .rett-navn {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-display);
     font-size: calc(16px * var(--skala));
     font-weight: 600;
     text-transform: uppercase;
@@ -1177,7 +1296,7 @@
   .rett-melding {
     font-size: calc(12.5px * var(--skala));
     line-height: 1.5;
-    color: var(--rust);
+    color: var(--varsel);
     margin: 10px 0 0;
     min-height: 18px;
   }
@@ -1186,21 +1305,21 @@
     background: none;
     border: 1px solid var(--etch-sterk);
     color: var(--dust);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(12.5px * var(--skala));
     padding: 10px;
     border-radius: 2px;
     margin-top: 18px;
     cursor: pointer;
   }
-  .rett-slett:hover { border-color: var(--rust); color: var(--rust); }
+  .rett-slett:hover { border-color: var(--varsel); color: var(--varsel); }
   .rett-slett:disabled { opacity: 0.5; cursor: default; }
 
   .rett-bunn { display: flex; gap: 10px; padding: 10px 16px 14px; border-top: 1px solid var(--etch); }
   .rett-bunn button {
     height: 52px;
     border-radius: 3px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--forno-font-body);
     font-size: calc(16px * var(--skala));
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -1214,7 +1333,7 @@
     color: var(--dust);
     white-space: nowrap;
   }
-  .rett-lagre { flex: 1; border: none; background: var(--verdigris); color: #FFFFFF; }
+  .rett-lagre { flex: 1; border: none; background: var(--aksent-flate); color: var(--paa-aksent); }
   .rett-lagre:disabled { background: var(--etch); color: var(--dust); cursor: default; }
 
   /* Øktene i loggen er nå trykkbare. Raden beholder .okt — den er fortsatt
@@ -1235,7 +1354,7 @@
   .okt-knapp:hover { background: var(--plate); }
   .okt-rett {
     font-size: calc(11px * var(--skala));
-    color: var(--verdigris);
+    color: var(--aksent);
     margin-left: 6px;
     white-space: nowrap;
   }
@@ -1261,20 +1380,20 @@
     body { background: #FFFFFF; }
     #utskrift {
       color: #000000;
-      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      font-family: var(--forno-font-body);
       font-size: 10.5pt;
       line-height: 1.45;
     }
     .pr-topp { border-bottom: 2px solid #000; padding-bottom: 6pt; margin-bottom: 10pt; }
     .pr-kicker {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: var(--forno-font-body);
       font-size: 9pt;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       margin: 0 0 1pt;
     }
     .pr-topp h1 {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: var(--forno-font-display);
       font-size: 26pt;
       font-weight: 700;
       text-transform: uppercase;
@@ -1299,7 +1418,7 @@
     .pr-ovelse .fig .bakke { stroke: #999; }
     .pr-tekst { flex: 1; min-width: 0; }
     .pr-navn {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: var(--forno-font-display);
       font-size: 14pt;
       font-weight: 600;
       text-transform: uppercase;
@@ -1311,7 +1430,7 @@
 
     .pr-skjema { break-inside: avoid; page-break-inside: avoid; margin-top: 14pt; }
     .pr-skjema h2 {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: var(--forno-font-display);
       font-size: 11pt;
       letter-spacing: 0.16em;
       text-transform: uppercase;
@@ -1322,7 +1441,7 @@
     .pr-skjema table { width: 100%; border-collapse: collapse; font-size: 9pt; }
     .pr-skjema th, .pr-skjema td { border: 0.5pt solid #999; padding: 7pt 4pt; text-align: left; }
     .pr-skjema th {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: var(--forno-font-body);
       font-size: 9pt;
       letter-spacing: 0.06em;
       text-transform: uppercase;
@@ -1340,15 +1459,23 @@
 <body>
 
 <div id="app">
+  <div class="topplinje">
+    <div class="topplinje-tittel">
+      <span>🏋️ Bedreliv <button type="button" class="versjon" id="versjon" title="Se hva som er nytt" hidden></button></span>
+      <small id="stempel">–</small>
+    </div>
+    <div class="topplinje-handling">
+      <button type="button" class="tema" id="tema" title="Bytt tema" aria-label="Bytt tema">☾</button>
+    </div>
+  </div>
+
   <div class="masthead">
     <p class="kicker">10-minutters manualprogram</p>
-    <h1>Styrkelogg <button type="button" class="versjon" id="versjon" title="Se hva som er nytt" hidden></button></h1>
+    <h1>Styrkelogg</h1>
     <div class="meta">
       <span>Økter loggført: <strong id="antall">–</strong></span>
-      <span id="idag">–</span>
     </div>
     <div class="bruker" id="bruker" hidden>
-      <span>Innlogget som <b id="bruker-navn"></b></span>
       <span class="tekststorrelse" id="tekststorrelse" role="group" aria-label="Tekststørrelse">
         <button type="button" data-skala="normal" title="Vanlig tekst" aria-label="Vanlig tekst">A</button>
         <button type="button" data-skala="stor" title="Stor tekst" aria-label="Stor tekst">A</button>
@@ -2541,7 +2668,7 @@
       var melding = e.message || 'Kunne ikke lagre økta.';
       if (fraFokus) {
         var v = document.getElementById('fokus-vaken');
-        if (v) { v.textContent = melding; v.style.color = 'var(--rust)'; }
+        if (v) { v.textContent = melding; v.style.color = 'var(--varsel)'; }
       } else {
         kvittering(melding, true);
       }
@@ -2596,6 +2723,68 @@
   // ===== Versjon og endringslogg =====
   // Nummeret leses fra toppen av CHANGELOG, så det kan aldri komme ut av takt
   // med loggen. Mangler changelog.js, skjules merket i stedet for å vise «?».
+  // Stempelet under appnavnet: hvem du er logget inn som, og hvilken dag det
+  // er. Er du ikke logget inn ennå, står bare datoen der.
+  function oppdaterStempel(navn) {
+    var el = document.getElementById('stempel');
+    if (!el) return;
+    var dag = datoTekst(new Date().toISOString());
+    el.textContent = navn ? navn + ' · ' + dag : dag;
+  }
+
+  // Tre temavalg, som i UltimatePizza: system følger telefonen, lys og mørk
+  // overstyrer. Standard er mørk. Klassen settes av skriptet i <head> ved
+  // oppstart — her bytter vi den videre og husker valget.
+  var TEMAER = ['mork', 'lys', 'system'];
+  var TEMA_IKON = { mork: '☾', lys: '☀', system: '◐' };
+  var TEMA_NAVN = { mork: 'Mørkt tema', lys: 'Lyst tema', system: 'Følger telefonen' };
+
+  function lagretTema() {
+    try {
+      var v = localStorage.getItem('bedrelivTema');
+      return TEMAER.indexOf(v) >= 0 ? v : 'mork';
+    } catch (e) { return 'mork'; }
+  }
+
+  function lystNa(valg) {
+    if (valg === 'lys') return true;
+    if (valg === 'mork') return false;
+    try { return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches); }
+    catch (e) { return false; }
+  }
+
+  function settTema(valg, husk) {
+    if (TEMAER.indexOf(valg) < 0) valg = 'mork';
+    if (lystNa(valg)) document.documentElement.setAttribute('data-tema', 'lys');
+    else document.documentElement.removeAttribute('data-tema');
+    var k = document.getElementById('tema');
+    if (k) {
+      k.textContent = TEMA_IKON[valg];
+      k.title = TEMA_NAVN[valg];
+      k.setAttribute('aria-label', TEMA_NAVN[valg]);
+      k.setAttribute('data-tema-valg', valg);
+    }
+    if (husk) { try { localStorage.setItem('bedrelivTema', valg); } catch (e) {} }
+  }
+
+  function kobleTema() {
+    var k = document.getElementById('tema');
+    if (!k) return;
+    // Står valget på «system», skal appen snu med telefonen — også mens den
+    // ligger åpen, som når nattmodus slår inn av seg selv.
+    try {
+      var mq = window.matchMedia('(prefers-color-scheme: light)');
+      var lytt = function () { if (lagretTema() === 'system') settTema('system', false); };
+      if (mq.addEventListener) mq.addEventListener('change', lytt);
+      else if (mq.addListener) mq.addListener(lytt);
+    } catch (e) { /* uten matchMedia står appen på det valgte temaet */ }
+    k.addEventListener('click', function () {
+      var na = TEMAER.indexOf(lagretTema());
+      settTema(TEMAER[(na + 1) % TEMAER.length], true);
+    });
+    settTema(lagretTema(), false);
+  }
+
   function visVersjon() {
     var el = document.getElementById('versjon');
     if (typeof CHANGELOG === 'undefined' || !CHANGELOG.length) return;
@@ -2950,6 +3139,7 @@
     document.getElementById('innhold').hidden = true;
     document.getElementById('bruker').hidden = true;
     document.getElementById('antall').textContent = '–';
+    oppdaterStempel('');
     settPortModus('inn');
     document.getElementById('p-navn').focus();
   }
@@ -2958,7 +3148,7 @@
     var u = Api.currentUser();
     document.getElementById('port').hidden = true;
     document.getElementById('bruker').hidden = false;
-    document.getElementById('bruker-navn').innerHTML = esc(u ? u.name : '');
+    oppdaterStempel(u ? u.name : '');
 
     var rot = document.getElementById('innhold');
     rot.hidden = false;
@@ -3003,9 +3193,10 @@
   }
 
   function start() {
-    document.getElementById('idag').textContent = datoTekst(new Date().toISOString());
+    oppdaterStempel('');
     visVersjon();
     kobleTekstStorrelse();
+    kobleTema();
     kobleSveip();
     koblePort();
 

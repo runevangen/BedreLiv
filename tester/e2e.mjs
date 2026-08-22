@@ -51,7 +51,8 @@ await page.fill('#p-pin2', '1234');
 await page.locator('#port-knapp').click();
 await page.waitForSelector('#innhold:not([hidden])', { timeout: 5000 });
 sjekk('registrering logger inn', await page.locator('#innhold').isVisible());
-sjekk('navnet vises i toppen', (await page.locator('#bruker-navn').textContent()) === 'Testbruker');
+sjekk('navnet står i stempelet under appnavnet', (await page.locator('#stempel').textContent()).startsWith('Testbruker · '),
+  await page.locator('#stempel').textContent());
 sjekk('tom logg vises', (await page.locator('#innhold').textContent()).includes('Første økt setter utgangspunktet'));
 
 // ===== Lagre en økt =====

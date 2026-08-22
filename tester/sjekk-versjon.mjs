@@ -26,7 +26,7 @@ sjekk('ingen dupliserte numre', new Set(CG.map(x=>x.v)).size === CG.length);
 sjekk('alle poster har måned og punkter', CG.every(x => x.d && Array.isArray(x.changes) && x.changes.length));
 
 console.log('--- I appen ---');
-sjekk('versjonen vises rett bak tittelen', await p.locator('.masthead h1 .versjon').isVisible());
+sjekk('versjonen står rett bak appnavnet i topplinja', await p.locator('.topplinje-tittel .versjon').isVisible());
 sjekk('viser nyeste nummer', (await p.locator('#versjon').textContent()) === 'v' + CG[0].v, await p.locator('#versjon').textContent());
 sjekk('synlig før innlogging også', !(await p.locator('#innhold').isVisible()) && await p.locator('#versjon').isVisible());
 sjekk('loggen er lukket', !(await p.locator('#endringer').isVisible()));

@@ -15,6 +15,16 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.19",
+    "d": "august 2026",
+    "changes": [
+      "Appen har fått UltimatePizzas drakt: den varme Forno-paletten med brent oransje aksent, og fontene Archivo Black på overskrifter, Archivo på brødtekst og IBM Plex Mono på tall og tellere.",
+      "Tre temavalg, som i UltimatePizza: mørk, lys og system. Knappen øverst til høyre går rundt, valget huskes, og «system» snur med telefonen mens appen ligger åpen. Standard er mørk.",
+      "Ny topplinje som blir stående når du blar: appnavnet med versjonsnummeret rett bak, og under det hvem du er logget inn som og hvilken dag det er. Navnet og datoen sto tidligere lenger ned og forsvant så snart du begynte å bla.",
+      "Rettet at brødteksten i fokus, «Endre» og endringsloggen sto i nettleserens serif. De tre skjermene ligger utenfor hoveddelen av appen og arvet aldri appfonten."
+    ]
+  },
+  {
     "v": "0.18",
     "d": "august 2026",
     "changes": [
