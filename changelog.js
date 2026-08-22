@@ -15,6 +15,16 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.18",
+    "d": "august 2026",
+    "changes": [
+      "Øvelsene står nå sammenslått til én linje hver, og du åpner den du holder på med. Åpner du en ny, lukkes den forrige, så siden er like kort uansett hvor langt ut i økta du er. Fem åpne kort var en lang side å bla gjennom; nå tar øvelsene under en tredjedel av plassen.",
+      "Appen åpner selv den første øvelsen du ikke har ført. Har du ført alt, står alle sammenslått — da er det lagreknappen som står for tur. Etter at økta er lagret begynner den på øvelse én igjen.",
+      "Den sammenslåtte linja viser hva du har ført: beste runde og om det gikk opp, ned eller likt. Har du ikke ført noe, står forrige økt der i stedet, så du ser hva du skal slå uten å åpne kortet.",
+      "Sammenslått brukes kortnavnet — «PRESS» framfor «MANUALPRESS STÅENDE» — så navnet ikke blir kappet for å gi plass til tallet. Åpner du kortet, står hele navnet der."
+    ]
+  },
+  {
     "v": "0.17",
     "d": "august 2026",
     "changes": [

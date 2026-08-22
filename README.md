@@ -25,6 +25,20 @@ vanligste feilen ligger bak «Vis utførelse», så loggeskjermen er kort å
 scrolle mens du trener. Teksten følger styrkeprogrammet: 3 runder, minimal
 pause mellom øvelsene, 60 sekunder mellom rundene.
 
+Øvelseskortene står sammenslått til én linje hver, og ett er åpent om
+gangen: åpner du et nytt, lukkes det forrige. Fem åpne kort er 1660 piksler
+å bla gjennom; ett åpent og fire sammenslåtte er 552. Uten at brukeren har
+valgt noe, åpner appen den første øvelsen som ikke er ført ennå — er alt
+ført, står alle sammenslått, og da er det lagreknappen som gjelder. Den
+lukkede linja viser kortnavnet, beste runde du har ført og hvilken vei det
+gikk, eller forrige økt hvis du ikke har ført noe.
+
+To variabler styrer det: `apenOvelse` (hvilket kort) og `apenSatt` (om
+brukeren har valgt selv). `apenSatt` nullstilles når økta er lagret, så
+neste økt begynner på øvelse én igjen. `settApen()` bytter klasser i stedet
+for å tegne siden på nytt — ellers mister feltet du står i både markør og
+rulleposisjon.
+
 ## Utskrift og tekst
 
 To lenker under banneret: **Skriv ut programmet** og **Kopier som tekst**.

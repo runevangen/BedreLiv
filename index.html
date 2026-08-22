@@ -251,12 +251,41 @@
     box-shadow: inset 3px 0 0 var(--verdigris);
   }
 
+  /* Fem øvelser med figurer, forrige økt og en rad per runde blir en lang
+     side å bla gjennom. Kortene står derfor sammenslått, og du åpner det du
+     holder på med. Ett om gangen: åpner du et nytt, lukkes det forrige, så
+     siden er like kort uansett hvor langt ut i økta du er. */
   .rad-topp {
     display: flex;
     align-items: baseline;
     gap: 8px;
     margin-bottom: 2px;
+    width: 100%;
+    background: none;
+    border: 0;
+    padding: 3px 0;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
   }
+  .rad-sum {
+    font-size: calc(11.5px * var(--skala));
+    color: var(--dust);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .rad-sum b { color: var(--ink); font-weight: 600; }
+  .rad-sum i { font-style: normal; font-weight: 600; }
+  .rad-pil {
+    flex: none;
+    color: var(--dust);
+    font-size: calc(11px * var(--skala));
+    transition: transform .18s ease;
+  }
+  .rad.apen .rad-pil { transform: rotate(180deg); }
+  .rad.apen .rad-sum { display: none; }
+  .rad:not(.apen) .maal { display: none; }
   .nr {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: calc(13px * var(--skala));
@@ -264,14 +293,25 @@
     color: var(--dust);
     min-width: 16px;
   }
-  .navn {
+  /* Sammenslått står kortnavnet — «PRESS» framfor «MANUALPRESS STÅENDE» —
+     så navnet ikke må kappes for å gi plass til tallet til høyre. Åpner du
+     kortet, står hele navnet der. */
+  .navn, .navn-kort {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: calc(20px * var(--skala));
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     flex: 1;
+    /* Navnet er det som får gi etter når skriften er skrudd helt opp — tallet
+       til høyre er poenget med den sammenslåtte linja. */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
+  .rad.apen .navn-kort { display: none; }
+  .rad:not(.apen) .navn { display: none; }
   .maal {
     font-size: calc(11px * var(--skala));
     color: var(--dust);
@@ -1413,6 +1453,11 @@
   var alleOkter = [];   // hele gjengen sine, eldst først
   var brukere = [];     // alle registrerte, også de som ikke har trent ennå
   var utkast = {};
+  // Hvilket øvelseskort som står åpent, og om brukeren har valgt selv. Har
+  // hen ikke det, åpner vi den første øvelsen som ikke er ført ennå — det er
+  // stedet du skal skrive. Har hen valgt, står valget til økta er lagret.
+  var apenOvelse = null;
+  var apenSatt = false;
   // Hvilken dag økta føres på. null = i dag. Å kunne velge dagen her er det
   // som gjør at en glemt økt ikke må gå veien om «Endre» på en gammel dag.
   var oktDato = null;
@@ -1481,10 +1526,60 @@
       '</div></div>';
   }
 
+  // Et kort er ført når hver runde har både vekt og reps. Siden runde én
+  // forplanter seg til de andre, er det som regel nok å fylle den ene.
+  function ferdigUtfylt(id) {
+    var liste = utkastRunder(id);
+    for (var r = 0; r < RUNDER; r++) {
+      var post = liste[r] || {};
+      if (post.vekt == null || post.reps == null) return false;
+    }
+    return true;
+  }
+
+  function standardApen() {
+    for (var i = 0; i < OVELSER.length; i++) {
+      if (!ferdigUtfylt(OVELSER[i].id)) return OVELSER[i].id;
+    }
+    return null;   // alt er ført — da er det lagreknappen som gjelder
+  }
+
+  // Sammenslått viser kortet det du har ført, og hvilken vei det gikk. Har du
+  // ikke ført noe, står forrige økt der i stedet, så du ser hva du skal slå
+  // uten å åpne kortet.
+  function sumTekst(ov) {
+    var beste = besteUtkast(ov.id);
+    if (beste) {
+      var d = domTekst(ov.id);
+      return '<b>' + beste.vekt + ' × ' + beste.reps + '</b>' +
+             (d ? ' <i class="' + domKlasse(ov.id) + '">' + d + '</i>' : '');
+    }
+    var sist = sisteFor(ov.id);
+    return sist ? 'sist ' + sist.vekt + ' × ' + sist.reps : 'ikke ført';
+  }
+
+  // Åpner ett kort og slår sammen resten. Vi bytter klasser i stedet for å
+  // tegne siden på nytt — da mister vi verken markør eller rulleposisjon.
+  function settApen(id) {
+    apenOvelse = id;
+    apenSatt = true;
+    OVELSER.forEach(function (ov) {
+      var rad = document.getElementById('rad-' + ov.id);
+      if (!rad) return;
+      var apen = ov.id === id;
+      rad.classList.toggle('apen', apen);
+      rad.querySelector('.rad-kropp').hidden = !apen;
+      rad.querySelector('.rad-topp').setAttribute('aria-expanded', apen ? 'true' : 'false');
+    });
+    var aktiv = id && document.getElementById('rad-' + id);
+    if (aktiv) aktiv.scrollIntoView({ block: 'nearest' });
+  }
+
   // ===== Loggskjermen =====
   function tegn() {
     var rot = document.getElementById('innhold');
     rot.className = '';
+    if (!apenSatt) apenOvelse = standardApen();
 
     var h = '';
     h += '<div class="banner"><b>3 runder</b> gjennom alle fem øvelsene. Minimal pause mellom øvelsene, 60 sekunder mellom rundene. De to siste repetisjonene skal kjennes tunge — klarer du 15 lett, er manualen for lett.' +
@@ -1504,10 +1599,20 @@
       var beste = besteUtkast(ov.id);
       var slatt = sist && beste && volum(beste.vekt, beste.reps) > volum(sist.vekt, sist.reps);
 
-      h += '<div class="rad' + (slatt ? ' slatt' : '') + '" id="rad-' + ov.id + '">';
-      h += '  <div class="rad-topp"><span class="nr">' + (i + 1) + '</span>';
+      var apen = ov.id === apenOvelse;
+
+      h += '<div class="rad' + (slatt ? ' slatt' : '') + (apen ? ' apen' : '') +
+           '" id="rad-' + ov.id + '">';
+      h += '  <button type="button" class="rad-topp" aria-expanded="' + (apen ? 'true' : 'false') +
+           '" aria-controls="kropp-' + ov.id + '">';
+      h += '    <span class="nr">' + (i + 1) + '</span>';
       h += '    <span class="navn">' + ov.navn + '</span>';
-      h += '    <span class="maal">' + ov.maal + '</span></div>';
+      h += '    <span class="navn-kort">' + ov.kort + '</span>';
+      h += '    <span class="maal">' + ov.maal + '</span>';
+      h += '    <span class="rad-sum">' + sumTekst(ov) + '</span>';
+      h += '    <span class="rad-pil" aria-hidden="true">▾</span>';
+      h += '  </button>';
+      h += '  <div class="rad-kropp" id="kropp-' + ov.id + '"' + (apen ? '' : ' hidden') + '>';
 
       h += hvordanBlokk(ov);
 
@@ -1535,6 +1640,7 @@
       }
       h += '  </div>';
       h += '  <div class="dommen ' + domKlasse(ov.id) + '">' + domTekst(ov.id) + '</div>';
+      h += '  </div>';
       h += '</div>';
     });
 
@@ -1621,6 +1727,14 @@
 
     kobleGjengen();
 
+    var topper = document.querySelectorAll('.rad-topp');
+    for (var t = 0; t < topper.length; t++) {
+      topper[t].addEventListener('click', function () {
+        var id = this.parentNode.id.slice(4);
+        settApen(apenOvelse === id ? null : id);
+      });
+    }
+
     var mer = document.querySelectorAll('.vis-mer');
     for (var n = 0; n < mer.length; n++) {
       mer[n].addEventListener('click', function () {
@@ -1670,6 +1784,7 @@
     var d = domDiff(ov.id);
     dom.className = 'dommen ' + domKlasse(ov.id);
     dom.textContent = domTekst(ov.id);
+    rad.querySelector('.rad-sum').innerHTML = sumTekst(ov);
     rad.classList.toggle('slatt', d !== null && d > 0);
   }
 
@@ -2412,6 +2527,7 @@
       okter.sort(etterDato);
       alleOkter.sort(etterDato);
       utkast = {};
+      apenSatt = false; // ny økt: åpne første øvelse igjen
       oktDato = null;   // neste økt gjelder i dag igjen
       fokusPos = 0;     // ny økt starter øverst i sirkelen igjen
       // Lagret fra fokus: lukk stille og la loggskjermen bak vise kvitteringen.
@@ -2861,6 +2977,7 @@
     alleOkter = [];
     brukere = [];
     utkast = {};
+    apenSatt = false;
     visPort();
   }
 

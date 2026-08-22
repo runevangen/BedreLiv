@@ -68,6 +68,12 @@ sjekk('tallene fra fokus står i lista', (await p.inputValue('#v-knebøy-0')) ==
 sjekk('lagreknappen er slått på av fokus-utkastet', !(await p.locator('#lagre').isDisabled()));
 
 // Motsatt vei: skriv i lista, åpne fokus
+// Kortet for press står allerede åpent — knebøy er ført, så automatikken har
+// flyttet seg videre. Er det likevel lukket, åpner vi det.
+sjekk('neste øvelse åpner seg selv', (await p.locator('#rad-press .rad-topp').getAttribute('aria-expanded')) === 'true');
+if ((await p.locator('#rad-press .rad-topp').getAttribute('aria-expanded')) !== 'true') {
+  await p.locator('#rad-press .rad-topp').click(); await p.waitForTimeout(150);
+}
 await p.fill('#v-press-0','16'); await p.fill('#r-press-0','8');
 await p.locator('#fokus-start').click();
 await p.waitForTimeout(250);
