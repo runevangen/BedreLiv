@@ -15,6 +15,14 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.22",
+    "d": "august 2026",
+    "changes": [
+      "Utvikling viser nå én retning for helheten — pil, overskrift og en linje om hvordan de siste øktene fordeler seg. De fem øvelsesradene ligger bak et trykk og åpnes alle på én gang. Fem piler under hverandre sa fem ganger det samme; nå leser du helheten først og henter detaljene når du vil ha dem. Valget huskes.",
+      "Rettet at det du ruller til — et øvelseskort som åpnes, en del av siden — kunne havne under topplinja, som ligger klistret øverst."
+    ]
+  },
+  {
     "v": "0.21",
     "d": "august 2026",
     "changes": [

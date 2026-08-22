@@ -167,6 +167,10 @@
   }
   .tema:hover { color: var(--ink); }
 
+  /* Topplinja ligger klistret over innholdet. Uten dette havner det vi ruller
+     til — et kort som åpnes, en seksjon — under den. */
+  .rad, .utv-topp, h2.seksjon, .okt-dag { scroll-margin-top: 68px; }
+
   .masthead {
     border-bottom: 2px solid var(--ink);
     padding-bottom: 12px;
@@ -688,6 +692,12 @@
 
   /* ===== Utvikling ===== */
   .utv-topp {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
     background: var(--plate);
     border: 1px solid var(--etch);
     border-left: 3px solid var(--aksent);
@@ -695,7 +705,10 @@
     padding: 12px 13px;
     margin-bottom: 12px;
   }
+  .utv-hode { display: flex; align-items: baseline; gap: 8px; }
   .utv-overskrift {
+    flex: 1;
+    min-width: 0;
     font-family: var(--forno-font-display);
     font-size: calc(24px * var(--skala));
     font-weight: 700;
@@ -703,8 +716,29 @@
     letter-spacing: 0.01em;
     line-height: 1.1;
     margin: 0;
+    overflow-wrap: anywhere;
   }
-  .utv-sum { font-size: calc(12.5px * var(--skala)); line-height: 1.5; color: var(--dust-sterk); margin: 5px 0 0; }
+  /* Retningen sies med både symbol og ord — pila her, ordet i overskriften. */
+  .utv-pil { font-style: normal; margin-right: 7px; }
+  .utv-pil.opp { color: var(--opp); }
+  .utv-pil.likt { color: var(--dust); }
+  .utv-pil.lettere { color: var(--lettere); }
+  .utv-topp.apen .rad-pil { transform: rotate(180deg); }
+  .utv-sum {
+    display: block;
+    font-size: calc(12.5px * var(--skala));
+    line-height: 1.5;
+    color: var(--dust-sterk);
+    margin: 5px 0 0;
+  }
+  .utv-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: calc(11.5px * var(--skala));
+    color: var(--aksent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
   .utv-rad {
     display: flex;
     align-items: center;
@@ -2011,6 +2045,9 @@
       });
     }
 
+    var utvTopp = document.getElementById('utv-topp');
+    if (utvTopp) utvTopp.addEventListener('click', function () { settUtvApen(!utvApen()); });
+
     var mer = document.querySelectorAll('.vis-mer');
     for (var n = 0; n < mer.length; n++) {
       mer[n].addEventListener('click', function () {
@@ -2188,6 +2225,27 @@
     return '= Som før';
   }
 
+  // Utvikling står sammenslått: én retning for helheten, og de fem
+  // øvelsesradene bak et trykk. Fem piler under hverandre sa fem ganger det
+  // samme — det er helheten du leser først, og detaljene når du vil ha dem.
+  var UTV_KEY = 'bedrelivUtvApen';
+
+  function utvApen() {
+    try { return localStorage.getItem(UTV_KEY) === '1'; } catch (e) { return false; }
+  }
+
+  function settUtvApen(apen) {
+    try { localStorage.setItem(UTV_KEY, apen ? '1' : '0'); } catch (e) {}
+    var topp = document.getElementById('utv-topp');
+    var rader = document.getElementById('utv-rader');
+    if (!topp || !rader) return;
+    rader.hidden = !apen;
+    topp.classList.toggle('apen', apen);
+    topp.setAttribute('aria-expanded', apen ? 'true' : 'false');
+    var hint = topp.querySelector('.utv-hint');
+    if (hint) hint.textContent = apen ? 'Skjul øvelsene' : 'Se hver øvelse';
+  }
+
   function utviklingBlokk() {
     var h = '<h2 class="seksjon">Utvikling</h2>';
 
@@ -2217,9 +2275,15 @@
       return h + '<p class="tomt">Ingen av øvelsene er loggført to ganger ennå. Da har vi ikke noe å sammenlikne.</p>';
     }
 
-    var overskrift = tell.opp > tell.lettere ? 'Det går oppover'
-      : tell.lettere > tell.opp ? 'Litt lettere om dagen'
+    // Helhetens retning: flertallet av øvelsene bestemmer. Står det likt
+    // mellom opp og lettere, holder du nivået.
+    var retning = tell.opp > tell.lettere ? 'opp'
+      : tell.lettere > tell.opp ? 'lettere'
+      : 'likt';
+    var overskrift = retning === 'opp' ? 'Det går oppover'
+      : retning === 'lettere' ? 'Litt lettere om dagen'
       : 'Du holder nivået';
+    var pil = retning === 'opp' ? '▲' : retning === 'lettere' ? '▼' : '=';
 
     var deler = [];
     if (tell.opp) deler.push(tell.opp + (tell.opp === 1 ? ' øvelse går' : ' øvelser går') + ' oppover');
@@ -2229,11 +2293,19 @@
       ? deler.slice(0, -1).join(', ') + ' og ' + deler[deler.length - 1]
       : deler[0];
 
+    var apen = utvApen();
     return h +
-      '<div class="utv-topp">' +
-        '<p class="utv-overskrift">' + overskrift + '</p>' +
-        '<p class="utv-sum">' + sum + ', regnet over de siste øktene.</p>' +
-      '</div>' + rader;
+      '<button type="button" class="utv-topp' + (apen ? ' apen' : '') + '" id="utv-topp"' +
+        ' aria-expanded="' + (apen ? 'true' : 'false') + '" aria-controls="utv-rader">' +
+        '<span class="utv-hode">' +
+          '<span class="utv-overskrift"><i class="utv-pil ' + retning + '">' + pil + '</i>' +
+            overskrift + '</span>' +
+          '<span class="rad-pil" aria-hidden="true">▾</span>' +
+        '</span>' +
+        '<span class="utv-sum">' + sum + ', regnet over de siste øktene.</span>' +
+        '<span class="utv-hint">' + (apen ? 'Skjul øvelsene' : 'Se hver øvelse') + '</span>' +
+      '</button>' +
+      '<div class="utv-rader" id="utv-rader"' + (apen ? '' : ' hidden') + '>' + rader + '</div>';
   }
 
   // ===== Endre eller slett én økt =====

@@ -206,6 +206,18 @@ Sparkline-domenet har en minstebredde på 10 % av snittet. Uten den ville en
 vingling på én prosent blitt tegnet som en bratt bakke, mens ordet ved siden
 av sa «som før».
 
+### Sammenslått som standard
+
+Delen viser **én** retning: en oppsummering med pil, overskrift og en linje om
+hvordan de siste øktene fordeler seg. De fem øvelsesradene ligger bak et trykk
+og åpnes alle på én gang. Fem piler under hverandre sa fem ganger det samme —
+det er helheten du leser først, detaljene når du vil ha dem. Valget huskes i
+localStorage (`bedrelivUtvApen`), som resten av visningsvalgene.
+
+Helhetens retning er flertallet: flest øvelser oppover gir «Det går oppover»,
+flest lettere gir «Litt lettere om dagen», og står det likt, «Du holder
+nivået».
+
 ### Om tonen
 
 «Lettere» er ikke en feil, og er ikke farget som en. `--varsel` er reservert

@@ -47,12 +47,33 @@ sjekk('utfall uten data utelates', (await p.locator('.utv-rad', { hasText: 'UTFA
 sjekk('tre rader totalt', (await p.locator('.utv-rad').count()) === 3);
 
 console.log('--- Oppsummeringen ---');
-sjekk('overskriften er balansert (1 opp, 1 likt, 1 ned)', (await p.locator('.utv-overskrift').textContent()) === 'Du holder nivået');
+// Pila står inne i overskriften, så teksten sammenliknes uten den.
+const overskrift = async () => (await p.locator('.utv-overskrift').textContent()).replace(/^[▲▼=]\s*/, '').trim();
+sjekk('overskriften er balansert (1 opp, 1 likt, 1 ned)', (await overskrift()) === 'Du holder nivået', await overskrift());
+sjekk('helheten har sin egen pil', (await p.locator('.utv-pil').textContent()).trim() === '=',
+  (await p.locator('.utv-pil').textContent()).trim());
+sjekk('pila er farget som «som før»', await p.locator('.utv-pil').evaluate(el => el.classList.contains('likt')));
 const sum = await p.locator('.utv-sum').textContent();
 sjekk('oppsummeringen teller riktig', sum.includes('1 øvelse går oppover') && sum.includes('1 ligger stabilt') && sum.includes('1 er lettere'), sum);
 sjekk('ingen formanende tekst i boksen', (await p.locator('.utv-trost').count()) === 0);
-sjekk('boksen er overskrift og oppsummering, ikke mer',
-  (await p.locator('.utv-topp p').count()) === 2, (await p.locator('.utv-topp p').count()) + ' avsnitt');
+sjekk('boksen er overskrift, oppsummering og et hint, ikke mer',
+  (await p.locator('.utv-topp > span').count()) === 3,
+  (await p.locator('.utv-topp > span').count()) + ' deler');
+
+console.log('--- Én retning først, øvelsene bak et trykk ---');
+sjekk('øvelsesradene er slått sammen fra start', !(await p.locator('.utv-rad').first().isVisible()));
+sjekk('boksen sier hva trykket gjør', (await p.locator('.utv-hint').textContent()) === 'Se hver øvelse');
+sjekk('boksen er merket som lukket', (await p.locator('#utv-topp').getAttribute('aria-expanded')) === 'false');
+await p.locator('#utv-topp').click(); await p.waitForTimeout(200);
+sjekk('trykk åpner alle radene på én gang', (await p.locator('.utv-rad:visible').count()) === 3,
+  (await p.locator('.utv-rad:visible').count()) + ' synlige');
+sjekk('hintet snur', (await p.locator('.utv-hint').textContent()) === 'Skjul øvelsene');
+await p.locator('#utv-topp').click(); await p.waitForTimeout(200);
+sjekk('nytt trykk lukker dem igjen', (await p.locator('.utv-rad:visible').count()) === 0);
+await p.locator('#utv-topp').click(); await p.waitForTimeout(200);
+await p.reload(); await p.waitForSelector('#innhold:not([hidden])');
+await p.waitForFunction(() => { const e = document.querySelector('#innhold'); return e && !e.classList.contains('laster'); });
+sjekk('valget huskes etter omstart', (await p.locator('.utv-rad').first().isVisible()));
 
 console.log('--- Sparkline ---');
 sjekk('én sparkline per rad', (await p.locator('svg.spark').count()) === 3);
@@ -94,7 +115,9 @@ await p.evaluate(async () => {
   await window.Api.saveOkt({ 'knebøy':{vekt:30,reps:10}, press:{vekt:20,reps:8}, roing:{vekt:26,reps:10} }, '2026-08-17T17:00:00Z');
 });
 await p.reload(); await p.waitForSelector('#innhold:not([hidden])'); await p.waitForFunction(() => { const e = document.querySelector('#innhold'); return e && !e.classList.contains('laster'); });
-sjekk('overskriften snur til oppover', (await p.locator('.utv-overskrift').textContent()) === 'Det går oppover');
+sjekk('overskriften snur til oppover', (await overskrift()) === 'Det går oppover', await overskrift());
+sjekk('pila snur med den', (await p.locator('.utv-pil').textContent()).trim() === '▲' &&
+  await p.locator('.utv-pil').evaluate(el => el.classList.contains('opp')));
 sjekk('fortsatt ingen formanende tekst', (await p.locator('.utv-trost').count()) === 0);
 
 await p.screenshot({ path: process.env.SHOT, fullPage: true });

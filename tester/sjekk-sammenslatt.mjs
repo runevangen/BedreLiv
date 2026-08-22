@@ -75,6 +75,22 @@ sjekk('alle seks kortene tar under halve skjermen', altLukket < 360, altLukket +
 await p.locator('#rad-knebøy .rad-topp').click(); await p.waitForTimeout(200);
 sjekk('tallene er der når kortet åpnes igjen', (await p.inputValue('#v-knebøy-0')) === '24');
 
+// Topplinja ligger klistret over innholdet: et kort vi ruller til, skal ikke
+// ende opp under den.
+// Trykket sendes fra JS, ikke via Playwright: klikker Playwright, ruller den
+// selv elementet inn i bildet først, og da har appens egen rulling ingenting
+// å gjøre — akkurat det vi vil måle.
+await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+await p.waitForTimeout(200);
+await p.evaluate(() => document.querySelector('#rad-press .rad-topp').click());
+await p.waitForTimeout(400);
+const [kortTopp, linjeBunn] = await Promise.all([
+  p.locator('#rad-press').evaluate(el => el.getBoundingClientRect().top),
+  p.locator('.topplinje').evaluate(el => el.getBoundingClientRect().bottom),
+]);
+sjekk('det åpnede kortet havner ikke under topplinja', kortTopp >= linjeBunn - 1,
+  Math.round(kortTopp) + ' mot ' + Math.round(linjeBunn));
+
 console.log('--- Etter lagring ---');
 await p.locator('#lagre').click();
 await p.waitForFunction(() => /lagret/i.test(document.querySelector('#kvittering')?.textContent || ''));
