@@ -8,6 +8,9 @@ import { getStore } from '@netlify/blobs';
 // POST   /api/okter                  -> ny økt { ownerId, dato, ovelser, savedBy?, shared? }
 //
 // «ovelser» er { øvelse-id: [ {vekt,reps}, ... ] } — én post per runde.
+// «annet» er den valgfrie sjette posten: { hva, minutter } for løping,
+// sykling og alt annet som ikke måles i kilo og repetisjoner. En økt er
+// gyldig med løft, med annet, eller med begge.
 // Økter lagret før runder ble loggført har { øvelse-id: {vekt,reps} }; det
 // formatet leses fortsatt, og skrives om til en liste med én runde.
 // PATCH  /api/okter/:id              -> rett opp en økt { userId, ovelser?, dato?, shared? }
@@ -33,6 +36,11 @@ const MAKS_OVELSER = 40;
 // Tak på runder per øvelse. Programmet har tre; taket er romslig så antallet
 // kan endres uten at serveren står i veien.
 const MAKS_RUNDER = 12;
+
+// Tak på fritekst og varighet i «annet». Taket er bare et vern mot at en
+// rusk-klient sender inn en roman eller et døgn på 100 timer.
+const MAKS_ANNET_TEGN = 60;
+const MAKS_MINUTTER = 1440;
 
 // Tak på heiarop per økt. Vennegjengen er liten; taket er bare et vern mot at
 // en rusk-klient fyller en post med tusenvis av oppføringer.
@@ -107,6 +115,17 @@ function cleanOvelser(raw) {
   return Object.keys(ut).length ? ut : null;
 }
 
+// Vasker den valgfrie «annet»-posten. «hva» må stå — uten den er det ingen
+// økt å vise. Minutter er valgfritt: noen vet hvor lenge de løp, andre ikke.
+function cleanAnnet(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const hva = cleanStr(raw.hva, MAKS_ANNET_TEGN);
+  if (!hva) return null;
+  const m = Number(raw.minutter);
+  const minutter = Number.isFinite(m) && m > 0 && m <= MAKS_MINUTTER ? Math.round(m) : null;
+  return minutter ? { hva, minutter } : { hva };
+}
+
 function cleanDato(v) {
   if (typeof v !== 'string') return null;
   const t = Date.parse(v);
@@ -176,7 +195,10 @@ export default async (req) => {
     if (req.method === 'POST' && isCollection) {
       const body = await req.json();
       const ovelser = cleanOvelser(body.ovelser);
-      if (!ovelser) return json(400, { error: 'Økta inneholder ingen gyldige løft' });
+      const annet = cleanAnnet(body.annet);
+      // En økt kan bestå av bare løft, bare «annet», eller begge. Bare tom
+      // er den ikke lov å være.
+      if (!ovelser && !annet) return json(400, { error: 'Økta inneholder verken løft eller annet' });
       const id = 'okt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
       const okt = {
         id,
@@ -184,7 +206,8 @@ export default async (req) => {
         savedBy: cleanStr(body.savedBy, 40),
         shared: body.shared === true,
         dato: cleanDato(body.dato) || new Date().toISOString(),
-        ovelser,
+        ovelser: ovelser || {},
+        annet: annet || null,
         heiarop: [],
         savedAt: new Date().toISOString()
       };
@@ -203,21 +226,28 @@ export default async (req) => {
         return json(403, { error: 'Bare eieren kan endre denne økta' });
       }
       const updated = { ...existing };
-      if (body.ovelser !== undefined) {
-        const ovelser = cleanOvelser(body.ovelser);
-        if (!ovelser) return json(400, { error: 'Økta inneholder ingen gyldige løft' });
-        // Heiarop er en reaksjon på bestemte tall. Endres tallene, gjelder de
-        // ikke lenger det noen heiet på, og fjernes. Flytter du bare datoen,
-        // står de — da er løftene de samme.
-        //
-        // Den lagrede økta vaskes gjennom samme funksjon før sammenlikningen.
-        // Ellers ville en økt i det gamle formatet alltid sett «endret» ut,
-        // og mistet heiaropene sine ved første berøring.
-        const forrige = cleanOvelser(existing.ovelser);
-        if (JSON.stringify(ovelser) !== JSON.stringify(forrige)) {
-          updated.heiarop = [];
+      // Løft og «annet» rettes i samme kall. Én av dem må stå igjen etterpå —
+      // ellers er det ingen økt, og da er sletting det riktige.
+      const rorerOvelser = body.ovelser !== undefined;
+      const rorerAnnet = body.annet !== undefined;
+      if (rorerOvelser || rorerAnnet) {
+        const ovelser = rorerOvelser ? cleanOvelser(body.ovelser) : cleanOvelser(existing.ovelser);
+        const annet = rorerAnnet ? cleanAnnet(body.annet) : cleanAnnet(existing.annet);
+        if (!ovelser && !annet) {
+          return json(400, { error: 'Økta inneholder verken løft eller annet' });
         }
-        updated.ovelser = ovelser;
+        // Heiarop er en reaksjon på et bestemt innhold. Endres løftene eller
+        // det du gjorde ellers, gjelder de ikke lenger det noen heiet på, og
+        // fjernes. Flytter du bare datoen, står de.
+        //
+        // Den lagrede økta vaskes gjennom de samme funksjonene før
+        // sammenlikningen. Ellers ville en økt i det gamle formatet alltid
+        // sett «endret» ut, og mistet heiaropene sine ved første berøring.
+        const for1 = JSON.stringify([cleanOvelser(existing.ovelser), cleanAnnet(existing.annet)]);
+        const etter = JSON.stringify([ovelser, annet]);
+        if (etter !== for1) updated.heiarop = [];
+        updated.ovelser = ovelser || {};
+        updated.annet = annet || null;
       }
       const dato = cleanDato(body.dato);
       if (dato) updated.dato = dato;

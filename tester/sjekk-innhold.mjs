@@ -30,7 +30,8 @@ sjekk('markløft krever 2 manualer', utstyr[3].startsWith('2 manualer'), utstyr[
 sjekk('utfall krever 2 manualer', utstyr[4].startsWith('2 manualer'), utstyr[4]);
 sjekk('to-manual-tekst forklarer hva som noteres', utstyr[1].includes('noter vekta på én'), utstyr[1]);
 
-const maal = await p.locator('.maal').allTextContents();
+// «Annet» er ikke en øvelse i programmet og står utenfor PDF-en.
+const maal = (await p.locator('.maal').allTextContents()).filter(t => t !== 'valgfritt');
 sjekk('mål følger PDF-en', JSON.stringify(maal) === JSON.stringify(['10 reps','8 reps','8 reps per arm','10 reps','8 reps per fot']), maal.join(' / '));
 sjekk('«bein» er byttet til «fot»', !(await p.locator('#innhold').textContent()).includes('bein'));
 

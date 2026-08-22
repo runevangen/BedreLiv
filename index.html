@@ -429,6 +429,44 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  /* «Annet» er valgfri, og skal se ut som et tillegg — ikke som øvelse nummer
+     seks i programmet. Stiplet kant og «+» i stedet for et tall. */
+  .rad.annet { border-style: dashed; }
+  .rad.annet .nr { color: var(--aksent); }
+  .annet-hjelp {
+    margin: 0 0 10px 24px;
+    font-size: calc(11.5px * var(--skala));
+    line-height: 1.5;
+    color: var(--brod);
+  }
+  .annet-felt { margin: 0 0 8px 24px; }
+  .annet-felt label {
+    display: block;
+    font-family: var(--forno-font-body);
+    font-size: calc(10.5px * var(--skala));
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dust);
+    margin-bottom: 4px;
+  }
+  .annet-felt input {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--etch-sterk);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: var(--forno-font-body);
+    font-size: calc(15px * var(--skala));
+    padding: 8px 10px;
+  }
+  .annet-felt input:focus { outline: 2px solid var(--aksent); outline-offset: -2px; }
+  .annet-felt input::placeholder { color: var(--hint); }
+  .annet-minutter { max-width: 140px; }
+  .annet-minutter input { font-family: var(--forno-font-mono); }
+  /* Må slå .okt-tall span, som ellers vinner på spesifisitet. */
+  .okt-tall .okt-annet { color: var(--aksent); }
+
   .rad.apen .navn-kort { display: none; }
   .rad:not(.apen) .navn { display: none; }
   .maal {
@@ -1576,10 +1614,19 @@
     }
   ];
 
+  // Den valgfrie sjette posten. Ikke en øvelse i programmet: den står utenfor
+  // OVELSER med vilje, så den ikke havner i runde-sirkelen i fokus, i
+  // utviklingskurven eller i loggskjemaet på papir. Løping og sykling har
+  // ingen tyngste runde å sammenlikne med forrige gang.
+  var ANNET = { id: 'annet', navn: 'Annet', kort: 'Annet' };
+
   var okter = [];       // mine egne, eldst først
   var alleOkter = [];   // hele gjengen sine, eldst først
   var brukere = [];     // alle registrerte, også de som ikke har trent ennå
   var utkast = {};
+  // Utkastet for «Annet»: { hva, minutter }. Ligger for seg, siden formen er
+  // en annen enn løftenes runder.
+  var utkastAnnet = { hva: '', minutter: '' };
   // Hvilket øvelseskort som står åpent, og om brukeren har valgt selv. Har
   // hen ikke det, åpner vi den første øvelsen som ikke er ført ennå — det er
   // stedet du skal skrive. Har hen valgt, står valget til økta er lagret.
@@ -1653,6 +1700,26 @@
       '</div></div>';
   }
 
+  // Kortene på loggskjermen: de fem øvelsene, og «Annet» sist.
+  function alleKort() { return OVELSER.concat([ANNET]); }
+
+  function annetFort() { return !!(utkastAnnet.hva || '').trim(); }
+
+  // Teksten som beskriver «annet», både sammenslått og i loggen: «Løping ·
+  // 30 min», eller bare «Løping» om varigheten ikke er ført.
+  function annetTekst(a) {
+    if (!a || !a.hva) return '';
+    return a.minutter ? a.hva + ' · ' + a.minutter + ' min' : a.hva;
+  }
+
+  function annetFraUtkast() {
+    if (!annetFort()) return null;
+    var m = parseInt(utkastAnnet.minutter, 10);
+    var ut = { hva: utkastAnnet.hva.trim() };
+    if (m > 0) ut.minutter = m;
+    return ut;
+  }
+
   // Et kort er ført når hver runde har både vekt og reps. Siden runde én
   // forplanter seg til de andre, er det som regel nok å fylle den ene.
   function ferdigUtfylt(id) {
@@ -1690,7 +1757,7 @@
   function settApen(id) {
     apenOvelse = id;
     apenSatt = true;
-    OVELSER.forEach(function (ov) {
+    alleKort().forEach(function (ov) {
       var rad = document.getElementById('rad-' + ov.id);
       if (!rad) return;
       var apen = ov.id === id;
@@ -1771,6 +1838,8 @@
       h += '</div>';
     });
 
+    h += annetKort();
+
     h += '<button class="lagre" id="lagre"' + (harUtkast() ? '' : ' disabled') + '>Lagre økta' +
          '<span id="lagre-dag">' + datoTekst(valgtDatoISO()) + '</span></button>';
     h += '<p class="kvittering" id="kvittering"></p>';
@@ -1792,6 +1861,9 @@
           var b = besteRunde(o, ov.id);
           if (b) h += '<span>' + ov.kort + ' ' + b.vekt + '×' + b.reps + '</span>';
         });
+        if (o.annet && o.annet.hva) {
+          h += '<span class="okt-annet">' + esc(annetTekst(o.annet)) + '</span>';
+        }
         h += '</div></button>';
       }
       h += '<div class="fot"><button class="slett" id="slett">Tøm hele loggen</button></div>';
@@ -1799,6 +1871,50 @@
 
     rot.innerHTML = h;
     koble();
+  }
+
+  // «Annet» ser ut som et øvelseskort, men har fritekst og minutter i stedet
+  // for runder. Den åpnes aldri av seg selv — den er valgfri, og skal ikke
+  // stå i veien for de fem.
+  function annetKort() {
+    var apen = apenOvelse === ANNET.id;
+    var h = '<div class="rad annet' + (apen ? ' apen' : '') + '" id="rad-annet">';
+    h += '  <button type="button" class="rad-topp" aria-expanded="' + (apen ? 'true' : 'false') +
+         '" aria-controls="kropp-annet">';
+    h += '    <span class="nr">+</span>';
+    h += '    <span class="navn">Annet</span>';
+    h += '    <span class="navn-kort">Annet</span>';
+    h += '    <span class="maal">valgfritt</span>';
+    h += '    <span class="rad-sum">' + annetSum() + '</span>';
+    h += '    <span class="rad-pil" aria-hidden="true">▾</span>';
+    h += '  </button>';
+    h += '  <div class="rad-kropp" id="kropp-annet"' + (apen ? '' : ' hidden') + '>';
+    h += '    <p class="annet-hjelp">Løping, sykling, tur — alt som ikke måles i kilo. ' +
+         'Det teller som en økt, men går ikke inn i utviklingskurven.</p>';
+    h += '    <div class="annet-felt">';
+    h += '      <label for="annet-hva">Hva gjorde du?</label>';
+    h += '      <input id="annet-hva" type="text" maxlength="60" placeholder="Løping"' +
+         ' value="' + esc(utkastAnnet.hva) + '">';
+    h += '    </div>';
+    h += '    <div class="annet-felt annet-minutter">';
+    h += '      <label for="annet-min">Minutter</label>';
+    h += '      <input id="annet-min" type="number" inputmode="numeric" step="1" min="0" max="1440"' +
+         ' placeholder="–" value="' + esc(String(utkastAnnet.minutter)) + '">';
+    h += '    </div>';
+    h += '  </div>';
+    h += '</div>';
+    return h;
+  }
+
+  function annetSum() {
+    var a = annetFraUtkast();
+    return a ? '<b>' + esc(annetTekst(a)) + '</b>' : 'ikke ført';
+  }
+
+  function oppdaterAnnet() {
+    var rad = document.getElementById('rad-annet');
+    if (rad) rad.querySelector('.rad-sum').innerHTML = annetSum();
+    oppdaterKnapp();
   }
 
   function koble() {
@@ -1822,6 +1938,17 @@
           });
         })(r);
       }
+    });
+
+    var aHva = document.getElementById('annet-hva');
+    if (aHva) aHva.addEventListener('input', function () {
+      utkastAnnet.hva = aHva.value;
+      oppdaterAnnet();
+    });
+    var aMin = document.getElementById('annet-min');
+    if (aMin) aMin.addEventListener('input', function () {
+      utkastAnnet.minutter = aMin.value;
+      oppdaterAnnet();
     });
 
     var l = document.getElementById('lagre');
@@ -1958,8 +2085,10 @@
     return beste;
   }
 
+  // En løpetur er en økt god nok: er «Annet» ført, kan økta lagres selv om
+  // ingen løft står.
   function harUtkast() {
-    return OVELSER.some(function (ov) { return !!besteUtkast(ov.id); });
+    return annetFort() || OVELSER.some(function (ov) { return !!besteUtkast(ov.id); });
   }
 
   function oppdaterKnapp() {
@@ -2148,6 +2277,15 @@
       h += '</div>';
     });
 
+    h += '<div class="rett-ovelse"><p class="rett-navn">Annet</p>';
+    h += '  <div class="annet-felt"><label for="rett-annet-hva">Hva gjorde du?</label>' +
+         '<input id="rett-annet-hva" type="text" maxlength="60" placeholder="Løping"' +
+         ' value="' + esc(o.annet && o.annet.hva ? o.annet.hva : '') + '"></div>';
+    h += '  <div class="annet-felt annet-minutter"><label for="rett-annet-min">Minutter</label>' +
+         '<input id="rett-annet-min" type="number" inputmode="numeric" step="1" min="0" max="1440"' +
+         ' placeholder="–" value="' + esc(o.annet && o.annet.minutter ? o.annet.minutter : '') + '"></div>';
+    h += '</div>';
+
     h += '  <p class="rett-varsel">Tøm begge feltene for å fjerne en øvelse fra økta. ' +
          'Utviklingen og gjengen regnes om når du lagrer.' +
          (antallHeia ? ' Endrer du tallene, forsvinner de ' + antallHeia +
@@ -2188,12 +2326,17 @@
       }
       if (runder.length) ovelser[ov.id] = runder;
     });
-    if (!Object.keys(ovelser).length) {
-      rettMelding('En økt må ha minst ett løft. Vil du bli kvitt hele økta, slett den i stedet.');
+    var hva = document.getElementById('rett-annet-hva').value.trim();
+    var min = parseInt(document.getElementById('rett-annet-min').value, 10);
+    var annet = hva ? (min > 0 ? { hva: hva, minutter: min } : { hva: hva }) : null;
+
+    if (!Object.keys(ovelser).length && !annet) {
+      rettMelding('En økt må ha minst ett løft eller noe ført under «Annet». ' +
+        'Vil du bli kvitt hele økta, slett den i stedet.');
       return;
     }
 
-    var endring = { ovelser: ovelser };
+    var endring = { ovelser: ovelser, annet: annet };
     var nyDato = document.getElementById('rett-dato').value;
     // Send bare dato når den faktisk er endret, så klokkeslettet på økta
     // beholdes ved en ren tallretting.
@@ -2261,18 +2404,22 @@
     });
 
     // Tomt loggskjema, så arket kan henges opp og fylles ut for hånd.
+    // «Annet» får sin egen kolonne: løping og sykling hører hjemme i loggen
+    // selv om de ikke måles i kilo.
     var celler = OVELSER.map(function (ov) {
       return '<th>' + ov.kort + '</th>';
-    }).join('');
+    }).join('') + '<th>' + ANNET.kort + '</th>';
+    var tomme = OVELSER.map(function () { return '<td></td>'; }).join('') + '<td></td>';
     var rader = '';
     for (var r = 0; r < LOGG_RADER; r++) {
-      rader += '<tr><td></td>' + OVELSER.map(function () { return '<td></td>'; }).join('') + '</tr>';
+      rader += '<tr><td></td>' + tomme + '</tr>';
     }
 
     h += '<div class="pr-skjema"><h2>Loggskjema</h2>' +
       '<table><thead><tr><th>Dato</th>' + celler + '</tr></thead>' +
       '<tbody>' + rader + '</tbody></table>' +
-      '<p class="pr-hint">Noter vekt × reps fra den tyngste runden, for eksempel «24 × 10».</p></div>';
+      '<p class="pr-hint">Noter vekt × reps fra den tyngste runden, for eksempel «24 × 10». ' +
+      'Under «Annet» skriver du det som ikke måles i kilo — «Løping 30 min».</p></div>';
 
     h += '<p class="pr-fot">' + PROGRESJON + ' — bedreliv.netlify.app' +
       (typeof CHANGELOG !== 'undefined' && CHANGELOG.length ? ' · v' + CHANGELOG[0].v : '') + '</p>';
@@ -2297,6 +2444,10 @@
       l.push('   Unngå: ' + ov.feil);
       l.push('');
     });
+    l.push('+ ANNET (valgfritt) — løping, sykling, tur');
+    l.push('   Alt som ikke måles i kilo. Det teller som en økt, men går ikke');
+    l.push('   inn i utviklingskurven.');
+    l.push('');
     l.push(PROGRESJON);
     l.push('');
     l.push('Logg øktene i appen: bedreliv.netlify.app');
@@ -2641,19 +2792,21 @@
         .map(function (r) { return { vekt: r.vekt, reps: r.reps }; });
       if (runder.length) ovelser[ov.id] = runder;
     });
-    if (!Object.keys(ovelser).length) return;
+    var annet = annetFraUtkast();
+    if (!Object.keys(ovelser).length && !annet) return;
 
     var knapp = document.getElementById(fraFokus ? 'fokus-fram' : 'lagre');
     var opprinnelig = knapp ? knapp.textContent : '';
     if (knapp) { knapp.disabled = true; knapp.textContent = 'Lagrer …'; }
 
-    Api.saveOkt(ovelser, valgtDatoISO()).then(function (okt) {
+    Api.saveOkt(ovelser, valgtDatoISO(), annet).then(function (okt) {
       okter.push(okt);
       alleOkter.push(okt);
       var etterDato = function (a, b) { return new Date(a.dato) - new Date(b.dato); };
       okter.sort(etterDato);
       alleOkter.sort(etterDato);
       utkast = {};
+      utkastAnnet = { hva: '', minutter: '' };
       apenSatt = false; // ny økt: åpne første øvelse igjen
       oktDato = null;   // neste økt gjelder i dag igjen
       fokusPos = 0;     // ny økt starter øverst i sirkelen igjen
@@ -3167,6 +3320,7 @@
     alleOkter = [];
     brukere = [];
     utkast = {};
+    utkastAnnet = { hva: '', minutter: '' };
     apenSatt = false;
     visPort();
   }

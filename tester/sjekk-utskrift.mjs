@@ -52,10 +52,13 @@ sjekk('fem øvelser på arket', (await u.locator('.pr-ovelse').count()) === 5);
 sjekk('ti figurer på arket', (await u.locator('svg.fig').count()) === 10);
 sjekk('loggskjema finnes', (await u.locator('.pr-skjema table').count()) === 1);
 sjekk('seks tomme rader', (await u.locator('.pr-skjema tbody tr').count()) === 6);
-sjekk('seks kolonner: dato + fem øvelser', (await u.locator('.pr-skjema thead th').count()) === 6);
+sjekk('sju kolonner: dato + fem øvelser + Annet', (await u.locator('.pr-skjema thead th').count()) === 7,
+  (await u.locator('.pr-skjema thead th').count()) + ' kolonner');
 const kolonner = await u.locator('.pr-skjema thead th').allTextContents();
-sjekk('kolonnene har brukbare navn', JSON.stringify(kolonner) === JSON.stringify(['Dato','Knebøy','Press','Roing','Markløft','Utfall']), kolonner.join(' | '));
+sjekk('kolonnene har brukbare navn', JSON.stringify(kolonner) === JSON.stringify(['Dato','Knebøy','Press','Roing','Markløft','Utfall','Annet']), kolonner.join(' | '));
 sjekk('radene er tomme', (await u.locator('.pr-skjema tbody td').allTextContents()).every(t => t === ''));
+sjekk('hver rad har en celle per kolonne', (await u.locator('.pr-skjema tbody td').count()) === 6 * 7,
+  (await u.locator('.pr-skjema tbody td').count()) + ' celler');
 sjekk('versjonen står i foten', (await u.locator('.pr-fot').textContent()).includes('v0.'),
   (await u.locator('.pr-fot').textContent()).trim());
 

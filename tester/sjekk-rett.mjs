@@ -43,7 +43,8 @@ sjekk('rettevinduet åpner', await pRune.locator('#rett').isVisible());
 sjekk('dekker skjermen', Math.abs((await pRune.locator('#rett').boundingBox()).height - 844) <= 2);
 sjekk('tallene er fylt inn', (await pRune.inputValue('#rv-knebøy-0')) === '24' && (await pRune.inputValue('#rr-knebøy-0')) === '10');
 sjekk('datoen er fylt inn', (await pRune.inputValue('#rett-dato')) === '2026-08-17');
-sjekk('alle fem øvelsene kan redigeres', (await pRune.locator('.rett-ovelse').count()) === 5);
+sjekk('alle fem øvelsene pluss «Annet» kan redigeres', (await pRune.locator('.rett-ovelse').count()) === 6,
+  (await pRune.locator('.rett-ovelse').count()) + ' blokker');
 sjekk('øvelser uten tall står tomme', (await pRune.inputValue('#rv-press-0')) === '');
 
 console.log('--- Trenden justeres etter retting ---');

@@ -220,6 +220,30 @@ Fire trinn under overskriften. Alle `font-size` i stilarket går gjennom
 huskes i localStorage. Selve velgeren er bevisst holdt utenfor skaleringen —
 ellers flytter knappene seg under fingeren idet du trykker.
 
+## «Annet» — den valgfrie sjette
+
+Løping, sykling, tur: alt som ikke måles i kilo og repetisjoner. Kortet ligger
+sist på loggskjermen, med stiplet kant og «+» i stedet for et tall, så det
+leses som et tillegg og ikke som øvelse nummer seks.
+
+`ANNET` står **utenfor** `OVELSER` med vilje. Ligger den i lista, havner den i
+runde-sirkelen i fokus (tre runder løping?), i utviklingskurven og i
+øvelsesradene under Utvikling — ingen av delene gir mening for noe som ikke
+har en tyngste runde å sammenlikne med forrige gang. Den har sin egen
+kortbygger, sitt eget utkast (`utkastAnnet`) og sitt eget felt på økta.
+
+På økta lagres den som `annet: { hva, minutter }`, eller `null`. `minutter` er
+valgfritt — noen vet hvor lenge de løp, andre ikke. En økt er gyldig med løft,
+med «annet», eller med begge: en løpetur er en økt god nok, og kan lagres selv
+om ingen løft står. Bare tom kan den ikke være, verken ved lagring eller ved
+retting.
+
+Heiaropene nullstilles også når «annet» endres — de gjaldt økta slik den sto,
+og en tur som blir til noe annet er en endring på lik linje med et rettet løft.
+
+I loggen står den etter løftene, i aksentfarge, så den skiller seg fra dem. På
+papir har den sin egen kolonne i loggskjemaet.
+
 ## Runder og datamodell
 
 Programmet er tre runder, og hver øvelse har ett felt per runde. En økt lagres

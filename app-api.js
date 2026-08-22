@@ -101,12 +101,13 @@ var Api = (function () {
     });
   }
 
-  function saveOkt(ovelser, dato) {
+  function saveOkt(ovelser, dato, annet) {
     return call('/api/okter', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ovelser: ovelser,
+        annet: annet || null,
         dato: dato || new Date().toISOString(),
         ownerId: currentUserId(),
         savedBy: currentUserName()
@@ -119,6 +120,7 @@ var Api = (function () {
   function updateOkt(id, endring) {
     var data = { userId: currentUserId() };
     if (endring.ovelser !== undefined) data.ovelser = endring.ovelser;
+    if (endring.annet !== undefined) data.annet = endring.annet;
     if (endring.dato !== undefined) data.dato = endring.dato;
     return call('/api/okter/' + encodeURIComponent(id), {
       method: 'PATCH',

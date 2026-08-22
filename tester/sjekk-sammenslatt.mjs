@@ -72,7 +72,7 @@ await p.locator('#rad-press .rad-topp').click(); await p.waitForTimeout(200);
 sjekk('nytt trykk lukker kortet', (await apne()) === 0, (await apne()) + ' åpne');
 const altLukket = await p.evaluate(() => Math.round([...document.querySelectorAll('.rad')]
   .reduce((s, r) => s + r.getBoundingClientRect().height, 0)));
-sjekk('alle fem øvelsene tar under en tredjedels skjerm', altLukket < 280, altLukket + 'px');
+sjekk('alle seks kortene tar under halve skjermen', altLukket < 360, altLukket + 'px');
 
 await p.locator('#rad-knebøy .rad-topp').click(); await p.waitForTimeout(200);
 sjekk('tallene er der når kortet åpnes igjen', (await p.inputValue('#v-knebøy-0')) === '24');

@@ -15,6 +15,16 @@
 //     koster noe for hver bruker hver gang.
 const CHANGELOG = [
   {
+    "v": "0.20",
+    "d": "august 2026",
+    "changes": [
+      "Ny valgfri post nederst på loggskjermen: «Annet». Der fører du løping, sykling, tur — alt som ikke måles i kilo. Du skriver hva du gjorde, og minutter om du vil.",
+      "En løpetur er en økt god nok: har du ført noe under «Annet», kan økta lagres selv om ingen løft står. Den teller med i antall økter og i ukene på rad.",
+      "«Annet» går ikke inn i utviklingskurven og står ikke i runde-sirkelen i fokus. En løpetur har ingen tyngste runde å sammenlikne med forrige gang, og ingen runde to.",
+      "I loggen står turen etter løftene, i oransje, så den skiller seg fra dem. Den kan rettes og fjernes i «Endre» som alt annet, og har fått sin egen kolonne i loggskjemaet på papir."
+    ]
+  },
+  {
     "v": "0.19",
     "d": "august 2026",
     "changes": [
